@@ -51,18 +51,26 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
     controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
   const mergedTheme = { ...defaultTheme, ...theme };
 
+  // Debug: Log position changes
+  useEffect(() => {
+    console.log('🔄 Chatbot position changed to:', position);
+  }, [position]);
+
   // GSAP animations setup
   const { contextSafe } = useGSAP(
     () => {
       // Initial setup - hide chat interface completely
       if (chatInterfaceRef.current) {
+        const isBottom = position.includes("bottom");
+        const isRight = position.includes("right");
+        
         gsap.set(chatInterfaceRef.current, {
           scale: 0,
           opacity: 0,
-          y: position.includes("bottom") ? 50 : -50,
-          transformOrigin: position.includes("bottom") 
-            ? "bottom " + (position.includes("right") ? "right" : "left")
-            : "top " + (position.includes("right") ? "right" : "left"),
+          y: isBottom ? 50 : -50,
+          transformOrigin: isBottom 
+            ? `bottom ${isRight ? "right" : "left"}`
+            : `top ${isRight ? "right" : "left"}`,
           visibility: "hidden"
         });
       }
@@ -497,16 +505,16 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
   });
 
   const positionClasses = {
-    "bottom-right": "bottom-4 right-4",
-    "bottom-left": "bottom-4 left-4",
-    "top-right": "top-4 right-4",
-    "top-left": "top-4 left-4",
+    "bottom-right": "position-bottom-right",
+    "bottom-left": "position-bottom-left",
+    "top-right": "position-top-right",
+    "top-left": "position-top-left",
   };
 
   return (
     <div
       ref={containerRef}
-      className={clsx("fixed z-chatbot", positionClasses[position], className)}
+      className={clsx(positionClasses[position], className)}
       data-chatbot-instance=""
       style={{
         fontFamily: mergedTheme.font,

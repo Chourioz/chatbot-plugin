@@ -1,10 +1,7 @@
 @import "tailwindcss";
 
 /* CSS Variables for theming - isolated for chatbot */
-[data-chatbot-instance],
-[data-chatbot-instance] *,
-.chatbot-container,
-.chatbot-container * {
+[data-chatbot-instance] {
   --chatbot-primary: #3b82f6;
   --chatbot-secondary: #1e40af;
   --chatbot-accent: #60a5fa;
@@ -23,12 +20,34 @@
   font-size: 14px;
   line-height: 1.5;
   box-sizing: border-box;
+  position: fixed;
 }
 
 [data-chatbot-instance] *,
 [data-chatbot-instance] *::before,
 [data-chatbot-instance] *::after {
   box-sizing: border-box;
+}
+
+/* Position classes for chatbot */
+[data-chatbot-instance].position-bottom-right {
+  bottom: 16px;
+  right: 16px;
+}
+
+[data-chatbot-instance].position-bottom-left {
+  bottom: 16px;
+  left: 16px;
+}
+
+[data-chatbot-instance].position-top-right {
+  top: 16px;
+  right: 16px;
+}
+
+[data-chatbot-instance].position-top-left {
+  top: 16px;
+  left: 16px;
 }
 
 /* GSAP Performance optimizations */
@@ -63,41 +82,41 @@
   transform: translateZ(0);
   backface-visibility: hidden;
   will-change: transform, opacity;
-  display: flex !important;
-  margin-bottom: 12px !important;
+  display: flex;
+  margin-bottom: 12px;
 }
 
 [data-chatbot-instance] .user-message {
-  justify-content: flex-end !important;
+  justify-content: flex-end;
 }
 
 [data-chatbot-instance] .bot-message {
-  justify-content: flex-start !important;
+  justify-content: flex-start;
 }
 
 [data-chatbot-instance] .user-message .max-w-xs {
-  background: linear-gradient(135deg, var(--chatbot-primary) 0%, var(--chatbot-accent) 100%) !important;
+  background: linear-gradient(135deg, var(--chatbot-primary) 0%, var(--chatbot-accent) 100%);
   box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.25);
-  color: white !important;
-  padding: 8px 12px !important;
-  border-radius: 12px !important;
-  max-width: 250px !important;
-  font-size: 14px !important;
-  line-height: 1.4 !important;
-  opacity: 1 !important; /* Ensure visible by default */
+  color: white;
+  padding: 8px 12px;
+  border-radius: 12px;
+  max-width: 250px;
+  font-size: 14px;
+  line-height: 1.4;
+  opacity: 1; /* Ensure visible by default */
 }
 
 [data-chatbot-instance] .bot-message .max-w-xs {
-  background: var(--chatbot-surface) !important;
+  background: var(--chatbot-surface);
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--chatbot-border) !important;
-  color: var(--chatbot-text) !important;
-  padding: 8px 12px !important;
-  border-radius: 12px !important;
-  max-width: 250px !important;
-  font-size: 14px !important;
-  line-height: 1.4 !important;
-  opacity: 1 !important; /* Ensure visible by default */
+  border: 1px solid var(--chatbot-border);
+  color: var(--chatbot-text);
+  padding: 8px 12px;
+  border-radius: 12px;
+  max-width: 250px;
+  font-size: 14px;
+  line-height: 1.4;
+  opacity: 1; /* Ensure visible by default */
 }
 
 .message-enter {
@@ -114,24 +133,24 @@
 /* Enhanced typing indicator */
 [data-chatbot-instance] .typing-indicator {
   transform: translateZ(0);
-  background: var(--chatbot-surface) !important;
+  background: var(--chatbot-surface);
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.08);
-  padding: 8px 12px !important;
-  border-radius: 12px !important;
-  border: 1px solid var(--chatbot-border) !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 4px !important;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--chatbot-border);
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 [data-chatbot-instance] .typing-dot {
   will-change: transform, opacity, scale;
   transform: translateZ(0);
-  background: linear-gradient(45deg, var(--chatbot-text-secondary), var(--chatbot-accent)) !important;
-  width: 8px !important;
-  height: 8px !important;
-  border-radius: 50% !important;
-  display: inline-block !important;
+  background: linear-gradient(45deg, var(--chatbot-text-secondary), var(--chatbot-accent));
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
 }
 
 /* Floating button enhancements */
@@ -196,67 +215,67 @@
   border-radius: 12px;
   overflow: hidden;
   /* Ensure the interface is visible and not affected by external styles */
-  display: flex !important;
-  flex-direction: column !important;
-  position: relative !important;
-  width: 320px !important;
-  height: 384px !important;
-  background: var(--chatbot-background) !important;
-  border: 1px solid var(--chatbot-border) !important;
-  font-family: var(--chatbot-font) !important;
-  font-size: 14px !important;
-  line-height: 1.5 !important;
-  color: var(--chatbot-text) !important;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 320px;
+  height: 384px;
+  background: var(--chatbot-background);
+  border: 1px solid var(--chatbot-border);
+  font-family: var(--chatbot-font);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--chatbot-text);
 }
 
 [data-chatbot-instance] .chat-header {
-  background: linear-gradient(135deg, var(--chatbot-primary) 0%, var(--chatbot-secondary) 100%) !important;
+  background: linear-gradient(135deg, var(--chatbot-primary) 0%, var(--chatbot-secondary) 100%);
   backdrop-filter: blur(10px);
   will-change: transform, opacity;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  padding: 16px !important;
-  color: white !important;
-  font-weight: 600 !important;
-  opacity: 1 !important; /* Ensure visible by default */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  color: white;
+  font-weight: 600;
+  opacity: 1; /* Ensure visible by default */
 }
 
 [data-chatbot-instance] .chat-messages {
   transform: translateZ(0);
   will-change: transform, opacity, scroll-position;
-  flex: 1 !important;
-  overflow-y: auto !important;
-  padding: 16px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 12px !important;
-  opacity: 1 !important; /* Ensure visible by default */
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  opacity: 1; /* Ensure visible by default */
 }
 
 [data-chatbot-instance] .chat-input-container {
   backdrop-filter: blur(10px);
-  background: var(--chatbot-background) !important;
+  background: var(--chatbot-background);
   will-change: transform, opacity;
-  padding: 16px !important;
-  border-top: 1px solid var(--chatbot-border) !important;
-  display: flex !important;
-  gap: 8px !important;
-  opacity: 1 !important; /* Ensure visible by default */
+  padding: 16px;
+  border-top: 1px solid var(--chatbot-border);
+  display: flex;
+  gap: 8px;
+  opacity: 1; /* Ensure visible by default */
 }
 
 /* Input field enhancements */
 [data-chatbot-instance] .chat-input {
   will-change: transform, box-shadow;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid var(--chatbot-border) !important;
-  background: var(--chatbot-background) !important;
-  flex: 1 !important;
-  padding: 8px 12px !important;
-  border-radius: 8px !important;
-  font-size: 14px !important;
-  color: var(--chatbot-text) !important;
-  outline: none !important;
+  border: 2px solid var(--chatbot-border);
+  background: var(--chatbot-background);
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--chatbot-text);
+  outline: none;
 }
 
 .chat-input:focus {
@@ -274,18 +293,18 @@
 /* Send button enhancements */
 [data-chatbot-instance] .send-button {
   will-change: transform, box-shadow;
-  background: linear-gradient(135deg, var(--chatbot-primary) 0%, var(--chatbot-secondary) 100%) !important;
+  background: linear-gradient(135deg, var(--chatbot-primary) 0%, var(--chatbot-secondary) 100%);
   transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   overflow: hidden;
-  padding: 8px 16px !important;
-  border: none !important;
-  border-radius: 8px !important;
-  color: white !important;
-  cursor: pointer !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .send-button::before {
