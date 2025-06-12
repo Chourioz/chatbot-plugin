@@ -1,0 +1,69 @@
+{
+  "name": "react-chatbot-component",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/react-chatbot-component.umd.js",
+  "module": "./dist/react-chatbot-component.es.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/react-chatbot-component.es.js",
+      "require": "./dist/react-chatbot-component.umd.js"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "build:types": "tsc --declaration --emitDeclarationOnly --outDir dist",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "dependencies": {
+    "@gsap/react": "^2.1.2",
+    "clsx": "^2.1.1",
+    "gsap": "^3.13.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.0",
+    "@tailwindcss/vite": "^4.1.10",
+    "@types/node": "^24.0.1",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.25.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^16.0.0",
+    "postcss": "^8.5.5",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "tailwindcss": "^4.1.10",
+    "terser": "^5.42.0",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.30.1",
+    "vite": "^6.3.5",
+    "vite-plugin-dts": "^4.5.4"
+  },
+  "keywords": [
+    "react",
+    "chatbot",
+    "web-component",
+    "tailwind",
+    "ui-component"
+  ],
+  "description": "A customizable React chatbot component with floating UI and Tailwind CSS styling",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/react-chatbot-component.git"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,168 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# GSAP Animation Patterns for React Components
+
+## Core GSAP Setup with React
+- Always use `useGSAP` hook from `@gsap/react` for React integration
+- Use `contextSafe` for event handlers to ensure proper cleanup
+- Set up refs for all animated elements before useGSAP calls
+- Apply hardware acceleration with `translateZ(0)` and `backface-visibility: hidden`
+
+## Animation Performance Optimization
+```css
+.gsap-optimized {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+  will-change: transform, opacity;
+}
+```
+
+## Icon Transition Pattern
+```typescript
+// Setup overlapping icons with initial states
+gsap.set(closeIconRef.current, {
+  scale: 0,
+  rotation: 180,
+  opacity: 0
+});
+
+// Smooth transition between states
+const tl = gsap.timeline();
+tl.to(chatIconRef.current, {
+  scale: 0,
+  rotation: -180,
+  opacity: 0,
+  duration: 0.3,
+  ease: "back.in(1.7)"
+})
+.to(closeIconRef.current, {
+  scale: 1,
+  rotation: 0,
+  opacity: 1,
+  duration: 0.3,
+  ease: "back.out(1.7)"
+}, "-=0.1");
+```
+
+## Modal/Interface Animation Pattern
+```typescript
+// Complex entrance animation with staggered elements
+if (isOpen) {
+  gsap.set(interfaceRef.current, { visibility: "visible" });
+  
+  const tl = gsap.timeline();
+  tl.to(interfaceRef.current, {
+    scale: 1,
+    opacity: 1,
+    y: 0,
+    duration: 0.6,
+    ease: "back.out(1.7)"
+  })
+  .from('.header', { y: -20, opacity: 0, duration: 0.3 }, "-=0.3")
+  .from('.content', { y: 20, opacity: 0, duration: 0.3 }, "-=0.2")
+  .from('.footer', { y: 20, opacity: 0, duration: 0.3 }, "-=0.2");
+}
+```
+
+## Message Animation with Direction
+```typescript
+// Animate messages from appropriate direction based on sender
+const isUserMessage = element.classList.contains('user-message');
+
+gsap.fromTo(element, {
+  opacity: 0,
+  y: 30,
+  scale: 0.8,
+  x: isUserMessage ? 20 : -20
+}, {
+  opacity: 1,
+  y: 0,
+  scale: 1,
+  x: 0,
+  duration: 0.5,
+  ease: "back.out(1.7)"
+});
+```
+
+## Typing Indicator Animation
+```typescript
+// Staggered dot animation with infinite loop
+const dots = container.querySelectorAll(".typing-dot");
+gsap.set(dots, { scale: 0.8, opacity: 0.3 });
+
+const tl = gsap.timeline({ repeat: -1 });
+tl.to(dots, {
+  scale: 1.2,
+  opacity: 1,
+  duration: 0.4,
+  ease: "back.out(1.7)",
+  stagger: 0.15
+})
+.to(dots, {
+  scale: 0.8,
+  opacity: 0.3,
+  duration: 0.4,
+  ease: "back.in(1.7)",
+  stagger: 0.15
+}, "-=0.2");
+```
+
+## Button Feedback Animation
+```typescript
+// Multi-stage button press feedback
+const handleButtonClick = contextSafe(() => {
+  gsap.to(buttonRef.current, {
+    scale: 0.85,
+    duration: 0.1,
+    ease: "power2.out",
+    onComplete: () => {
+      gsap.to(buttonRef.current, {
+        scale: 1,
+        duration: 0.4,
+        ease: "elastic.out(1, 0.5)"
+      });
+    }
+  });
+});
+```
+
+## Smooth Scroll Animation
+```typescript
+// GSAP-controlled smooth scrolling
+gsap.to(scrollContainer, {
+  scrollTop: targetElement.offsetTop,
+  duration: 0.8,
+  ease: "power2.out"
+});
+```
+
+## Accessibility and Reduced Motion
+```typescript
+// Check for reduced motion preference
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+if (prefersReducedMotion) {
+  // Disable animations or use simpler alternatives
+  gsap.set(element, { opacity: 1, scale: 1 });
+} else {
+  // Full animation
+  gsap.fromTo(element, { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.5 });
+}
+```
+
+## Timeline Management
+- Use `gsap.timeline()` for complex sequences
+- Use negative delays (`"-=0.2"`) for overlapping animations
+- Set `onComplete` callbacks for chained animations
+- Use `contextSafe` wrapper for all event-triggered animations
+
+## Common Easing Patterns
+- `"back.out(1.7)"` - Natural bounce for entrances
+- `"back.in(1.7)"` - Smooth exits
+- `"elastic.out(1, 0.5)"` - Button feedback
+- `"power2.out"` - General smooth transitions
+- `"sine.inOut"` - Subtle continuous animations

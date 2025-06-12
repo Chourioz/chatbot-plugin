@@ -1,0 +1,55 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# React 19 Web Component Development Guide
+
+## Project Structure
+- Use Vite as the build tool for modern React web components
+- Configure TypeScript for proper type safety
+- Structure components in `src/` directory with clear separation of concerns
+- Use `src/chatbot.tsx` as the main entry point for web component
+- Keep types in `src/types.ts` for better organization
+
+## React 19 Web Component Best Practices
+- Leverage React 19's native Custom Elements support
+- Use `createRoot` API for mounting components
+- Handle props as both attributes and properties
+- Support custom events with proper event handling
+- Ensure compatibility across different frameworks
+
+## Vite Configuration for Web Components
+- Configure `vite.config.ts` with library mode
+- Use UMD format for universal compatibility
+- Set `cssCodeSplit: false` to include styles in JS bundle
+- Configure external dependencies appropriately
+- Enable Terser minification for production builds
+
+## Tailwind CSS Integration
+- Use `@tailwindcss/vite` plugin for modern integration
+- Configure CSS variables for customizable theming
+- Ensure Shadow DOM compatibility
+- Use CSS-in-JS approach for style isolation
+- Create theme system with CSS custom properties
+
+## Chatbot Component Architecture
+- Implement floating button trigger mechanism
+- Create expandable chat interface
+- Support customizable color palettes through CSS variables
+- Handle message state management
+- Provide callback functions for integration
+
+## Publishing and Distribution
+- Configure `package.json` for npm/pnpm/yarn compatibility
+- Set proper entry points for different module systems
+- Include TypeScript declarations
+- Use semantic versioning
+- Test cross-framework compatibility
+
+## Development Workflow
+- Always verify current working directory before file operations
+- Use proper import/export syntax for web components
+- Test component in isolation before building
+- Validate CSS variable theming system
+- Ensure no conflicts with host application styles

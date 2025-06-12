@@ -1,0 +1,83 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Chatbot Component Development Patterns
+
+## Component Architecture
+- Separate floating button from chat interface
+- Use state management for open/closed states
+- Implement smooth animations for expand/collapse
+- Handle keyboard accessibility (ESC to close, Tab navigation)
+
+## Theming System with CSS Variables
+```css
+:host {
+  --chatbot-primary: #3b82f6;
+  --chatbot-secondary: #1e40af;
+  --chatbot-accent: #60a5fa;
+  --chatbot-background: #ffffff;
+  --chatbot-surface: #f8fafc;
+  --chatbot-text: #1f2937;
+  --chatbot-text-secondary: #6b7280;
+  --chatbot-border: #e5e7eb;
+  --chatbot-font: system-ui, sans-serif;
+}
+```
+
+## Tailwind Configuration for Web Components
+- Use CSS variables in Tailwind theme extension
+- Configure content paths for component files
+- Enable JIT mode for optimized builds
+- Use prefix or scope to avoid conflicts
+
+## Message Handling Patterns
+```typescript
+interface ChatMessage {
+  id: string;
+  text: string;
+  sender: 'user' | 'bot';
+  timestamp: Date;
+}
+
+interface ChatbotConfig {
+  onMessage?: (message: string) => Promise<string>;
+  welcomeMessage?: string;
+  placeholder?: string;
+}
+```
+
+## Floating Button Positioning
+- Support multiple positions (bottom-right, bottom-left, etc.)
+- Use fixed positioning with z-index management
+- Implement responsive sizing
+- Add hover and focus states
+
+## Integration API Design
+```typescript
+// Declarative usage
+<react-chatbot 
+  title="Help Assistant"
+  theme='{"primary": "#ff6b35"}'
+  position="bottom-right"
+></react-chatbot>
+
+// Programmatic usage
+const chatbot = new ReactChatbot({
+  onMessage: async (msg) => await apiCall(msg),
+  theme: { primary: '#ff6b35' }
+});
+```
+
+## Style Isolation Strategies
+- Use Shadow DOM for complete style isolation
+- Inject styles programmatically to avoid conflicts
+- Namespace CSS classes if Shadow DOM not available
+- Test with various host application styles
+
+## Performance Considerations
+- Lazy load chat interface until first interaction
+- Optimize bundle size with tree shaking
+- Use React.memo for message components
+- Implement virtual scrolling for long conversations

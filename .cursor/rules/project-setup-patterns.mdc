@@ -1,0 +1,52 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Project Setup and File Organization Patterns
+
+## Directory Structure Verification
+- Always run `pwd` and `ls -la` before creating or modifying files
+- Understand the current working directory context
+- Verify project structure matches expected layout
+- Check for nested directories that might cause confusion
+
+## File Creation Best Practices
+- Create files in the correct directory structure
+- Use relative paths appropriately
+- Verify file existence before attempting modifications
+- Clean up incorrectly placed files promptly
+
+## Vite + React + TypeScript Setup
+```
+project-root/
+├── src/
+│   ├── components/
+│   ├── types.ts
+│   ├── main.tsx
+│   └── index.css
+├── public/
+├── package.json
+├── vite.config.ts
+├── tsconfig.json
+└── tailwind.config.js
+```
+
+## Package Manager Commands
+- Use consistent package manager (npm/pnpm/yarn)
+- Install dependencies in correct order
+- Separate dev dependencies from peer dependencies
+- Configure peer dependencies for web components
+
+## Configuration Files Priority
+1. Verify current directory structure
+2. Update existing config files rather than creating new ones
+3. Use search_replace for precise file modifications
+4. Test configuration changes incrementally
+
+## Common Mistakes to Avoid
+- Creating files in wrong directory levels
+- Not checking current working directory
+- Overwriting existing configurations without review
+- Missing dependency installations
+- Incorrect import/export paths

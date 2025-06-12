@@ -1,0 +1,62 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# React Chatbot Component File References
+
+## Core Component Files
+- Main chatbot component: [src/chatbot.tsx](mdc:src/chatbot.tsx)
+- TypeScript interfaces: [src/types.ts](mdc:src/types.ts)
+- Component styles: [src/styles.css](mdc:src/styles.css)
+- Entry point: [src/index.ts](mdc:src/index.ts)
+- Demo application: [src/main.tsx](mdc:src/main.tsx)
+
+## Configuration Files
+- Vite configuration: [vite.config.ts](mdc:vite.config.ts)
+- TypeScript config: [tsconfig.json](mdc:tsconfig.json)
+- Tailwind config: [tailwind.config.js](mdc:tailwind.config.js)
+- Package configuration: [package.json](mdc:package.json)
+
+## Documentation
+- Project README: [README.md](mdc:README.md)
+
+## Key Implementation Details
+
+### Main Component Structure
+The [src/chatbot.tsx](mdc:src/chatbot.tsx) file contains:
+- GSAP animation setup with useGSAP hook
+- Floating button with icon transitions
+- Chat interface with staggered animations
+- Message handling and typing indicators
+- Theme system integration
+
+### Type Definitions
+The [src/types.ts](mdc:src/types.ts) file defines:
+- ChatMessage interface for message structure
+- ChatbotTheme interface for theming system
+- ChatbotProps interface for component props
+- Position type for chatbot placement
+
+### Styling System
+The [src/styles.css](mdc:src/styles.css) file includes:
+- CSS variables for theming
+- GSAP performance optimizations
+- Component-specific styles
+- Responsive design patterns
+- Dark mode support
+
+### Build Configuration
+The [vite.config.ts](mdc:vite.config.ts) configures:
+- Library mode for web component distribution
+- External dependencies (React, ReactDOM)
+- CSS bundling strategy
+- TypeScript declaration generation
+- Terser minification
+
+## Development Patterns
+- Always reference these files when making changes
+- Maintain consistency across component architecture
+- Follow established GSAP animation patterns
+- Keep theming system centralized in CSS variables
+- Test changes in demo application before building
