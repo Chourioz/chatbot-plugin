@@ -1,0 +1,242 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Vite + React Web Component Development
+
+## Project Configuration
+
+### Build Configuration
+The main build configuration is in [vite.config.ts](mdc:vite.config.ts):
+- Library mode for web component distribution
+- UMD and ES module formats
+- External dependencies configuration
+- TypeScript declaration generation
+
+### Package Configuration
+Package setup in [package.json](mdc:package.json):
+- Multiple entry points for different module systems
+- Peer dependencies for React ecosystem
+- Build scripts for development and production
+
+### TypeScript Configuration
+TypeScript setup in [tsconfig.app.json](mdc:tsconfig.app.json):
+- Modern ES2020 target
+- Bundler module resolution
+- React JSX transform
+- Strict type checking
+
+## Vite Library Mode Setup
+
+### Entry Point Configuration
+```typescript
+build: {
+  lib: {
+    entry: resolve("src/index.ts"),
+    name: "ReactChatbotComponent",
+    formats: ["es", "umd"],
+    fileName: (format) => `react-chatbot-component.${format}.js`,
+  }
+}
+```
+
+### External Dependencies
+```typescript
+rollupOptions: {
+  external: ["react", "react-dom"],
+  output: {
+    globals: {
+      react: "React",
+      "react-dom": "ReactDOM",
+    },
+  },
+}
+```
+
+## React 19 Web Component Patterns
+
+### Component Export Strategy
+Main export in [src/index.ts](mdc:src/index.ts):
+- Named exports for TypeScript support
+- Default export for convenience
+- Type exports for consumers
+
+### Web Component Integration
+- React component designed for embedding
+- CSS-in-JS approach for style isolation
+- Event-based communication patterns
+- Framework-agnostic usage
+
+## Tailwind CSS Integration
+
+### Vite Plugin Configuration
+```typescript
+import tailwindcss from "@tailwindcss/vite";
+
+plugins: [
+  react(),
+  tailwindcss(),
+  // other plugins
+]
+```
+
+### CSS Variable Integration
+- Tailwind classes reference CSS variables
+- Dynamic theming through CSS custom properties
+- No conflicts with host application styles
+
+### Configuration File
+Tailwind config in [tailwind.config.js](mdc:tailwind.config.js):
+- Content paths for component files
+- Theme extensions for CSS variables
+- Custom utilities and components
+
+## Development Workflow
+
+### Development Server
+- Hot reload for component changes
+- Demo application for testing
+- Live preview of integrations
+
+### Build Process
+1. TypeScript compilation
+2. Vite library bundling
+3. Declaration file generation
+4. Asset optimization
+
+### Testing Integration
+- Vitest configuration in [vitest.config.ts](mdc:vitest.config.ts)
+- Separate config to avoid conflicts
+- JSDOM environment for component testing
+
+## Distribution Strategy
+
+### Multiple Formats
+- **ES Modules**: Modern bundlers and browsers
+- **UMD**: Legacy browser support and CDN usage
+- **TypeScript Declarations**: IDE support and type safety
+
+### Package Exports
+```json
+{
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/react-chatbot-component.es.js",
+      "require": "./dist/react-chatbot-component.umd.js"
+    }
+  }
+}
+```
+
+## Performance Optimizations
+
+### Bundle Size
+- Tree-shaking enabled
+- External dependencies excluded
+- CSS bundling optimized
+- Terser minification
+
+### Runtime Performance
+- Lazy loading patterns
+- Efficient re-renders with React.memo
+- Optimized animation performance
+- Memory leak prevention
+
+## CSS Strategy
+
+### Style Isolation
+- CSS variables for theming
+- Scoped class names
+- No global style pollution
+- Host application compatibility
+
+### Responsive Design
+- Mobile-first approach
+- Flexible positioning system
+- Scalable typography
+- Touch-friendly interactions
+
+## Integration Patterns
+
+### Framework Agnostic Usage
+```html
+<!-- CDN Usage -->
+<script src="https://unpkg.com/react-chatbot-component"></script>
+<div id="chatbot-container"></div>
+```
+
+### React Application Integration
+```typescript
+import { ReactChatbot } from 'react-chatbot-component';
+
+function App() {
+  return (
+    <ReactChatbot 
+      title="Support Chat"
+      onMessage={handleMessage}
+    />
+  );
+}
+```
+
+### Vue/Angular Integration
+- Custom element registration
+- Event-based communication
+- Props as attributes
+- Framework-specific wrappers
+
+## Development Best Practices
+
+### Code Organization
+- Component logic in [src/chatbot.tsx](mdc:src/chatbot.tsx)
+- Types in [src/types.ts](mdc:src/types.ts)
+- Clean export structure
+- Modular architecture
+
+### Version Management
+- Semantic versioning
+- Changelog maintenance
+- Breaking change documentation
+- Migration guides
+
+### Documentation
+- README with usage examples
+- API documentation
+- Integration guides
+- Troubleshooting section
+
+## Deployment Considerations
+
+### NPM Publishing
+- Proper package.json configuration
+- Files field for distribution
+- Keywords for discoverability
+- License and repository information
+
+### CDN Distribution
+- UMD build for direct browser usage
+- Version-specific URLs
+- Minified and development builds
+- CORS considerations
+
+### Browser Compatibility
+- Modern browser support (ES2020+)
+- Polyfill recommendations
+- Progressive enhancement
+- Graceful degradation
+
+## Monitoring and Analytics
+
+### Bundle Analysis
+- Size tracking over time
+- Dependency analysis
+- Performance metrics
+- Load time optimization
+
+### Usage Analytics
+- Integration patterns
+- Error tracking
+- Performance monitoring
+- User feedback collection

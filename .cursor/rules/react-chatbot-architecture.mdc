@@ -1,0 +1,240 @@
+---
+description: 
+globs: *.test.*
+alwaysApply: false
+---
+# React Chatbot Component Architecture
+
+## Core Component Structure
+
+### Main Component File
+The primary chatbot implementation is in [src/chatbot.tsx](mdc:src/chatbot.tsx), which exports the `ReactChatbot` component.
+
+### Type Definitions
+All TypeScript interfaces are defined in [src/types.ts](mdc:src/types.ts):
+- `ChatMessage` - Message structure
+- `ChatbotTheme` - Theming system
+- `ChatbotProps` - Component props
+- `Position` - Placement options
+
+### Entry Point
+The main export is handled in [src/index.ts](mdc:src/index.ts) for clean imports.
+
+## GSAP Animation Patterns
+
+### Animation Setup
+The component uses GSAP with the `useGSAP` hook from `@gsap/react` for:
+- Floating button animations
+- Chat interface open/close transitions
+- Message entrance animations
+- Typing indicator effects
+- Icon transitions
+
+### Key Animation Principles
+1. **Hardware Acceleration**: Use `translateZ(0)` and `backface-visibility: hidden`
+2. **contextSafe**: Wrap all event-triggered animations
+3. **Timeline Management**: Use `gsap.timeline()` for complex sequences
+4. **Cleanup**: Proper animation cleanup on component unmount
+
+### Animation Refs Pattern
+```typescript
+const containerRef = useRef<HTMLDivElement>(null);
+const chatInterfaceRef = useRef<HTMLDivElement>(null);
+const floatingButtonRef = useRef<HTMLButtonElement>(null);
+// ... other animation refs
+```
+
+## State Management Patterns
+
+### Controlled vs Uncontrolled
+The component supports both modes:
+- **Controlled**: `isOpen` prop with `onToggle` callback
+- **Uncontrolled**: Internal state management
+
+### Message State
+- Messages stored in array with `maxMessages` limit
+- Automatic scrolling to latest message
+- Typing indicator state management
+
+### Theme State
+- CSS variables applied dynamically
+- Merge pattern: `{ ...defaultTheme, ...theme }`
+
+## Component Architecture
+
+### Floating Button
+- Fixed positioning with configurable placement
+- Dynamic aria-label based on state
+- Overlapping icon transitions (chat ↔ close)
+- Hover and focus animations
+
+### Chat Interface
+- Always rendered but visibility controlled by GSAP
+- Header with title and close button
+- Scrollable messages container
+- Input area with send button
+
+### Message System
+- User and bot message differentiation
+- Timestamp tracking
+- Error message handling
+- Welcome message initialization
+
+## Styling System
+
+### CSS Variables Theming
+```css
+:host {
+  --chatbot-primary: #3b82f6;
+  --chatbot-secondary: #1e40af;
+  --chatbot-accent: #60a5fa;
+  --chatbot-background: #ffffff;
+  --chatbot-surface: #f8fafc;
+  --chatbot-text: #1f2937;
+  --chatbot-text-secondary: #6b7280;
+  --chatbot-border: #e5e7eb;
+  --chatbot-font: system-ui, sans-serif;
+}
+```
+
+### Tailwind Integration
+- Uses Tailwind classes with CSS variable references
+- Custom shadow utilities
+- Responsive design patterns
+
+### Position Classes
+- `position-bottom-right` (default)
+- `position-bottom-left`
+- `position-top-right`
+- `position-top-left`
+
+## Event Handling Patterns
+
+### Message Handling
+```typescript
+const handleSendMessage = contextSafe(async (text: string) => {
+  // Validation, state updates, API calls
+});
+```
+
+### Keyboard Events
+- Enter key for message sending
+- Escape key support (can be implemented)
+- Tab navigation support
+
+### Focus Management
+- Auto-focus input when chat opens
+- Proper focus restoration on close
+
+## Integration API Design
+
+### Props Interface
+```typescript
+interface ChatbotProps {
+  title?: string;
+  welcomeMessage?: string;
+  placeholder?: string;
+  position?: Position;
+  theme?: Partial<ChatbotTheme>;
+  onMessage?: (message: string) => Promise<string>;
+  maxMessages?: number;
+  showTypingIndicator?: boolean;
+  enableSound?: boolean;
+  isOpen?: boolean;
+  onToggle?: (isOpen: boolean) => void;
+  className?: string;
+}
+```
+
+### Usage Patterns
+```typescript
+// Basic usage
+<ReactChatbot 
+  title="Help Assistant"
+  onMessage={handleMessage}
+/>
+
+// Advanced usage with theming
+<ReactChatbot 
+  title="Custom Bot"
+  theme={{ primary: "#ff6b35" }}
+  position="bottom-left"
+  isOpen={isOpen}
+  onToggle={setIsOpen}
+/>
+```
+
+## Performance Optimizations
+
+### Animation Performance
+- Hardware acceleration enabled
+- Minimal DOM queries
+- Efficient timeline management
+- Proper cleanup on unmount
+
+### Memory Management
+- Ref cleanup in useEffect
+- Message array size limiting
+- Event listener cleanup
+
+### Bundle Optimization
+- Tree-shakeable exports
+- External dependencies properly configured
+- CSS bundling strategy
+
+## Development Workflow
+
+### Build Configuration
+Main build config in [vite.config.ts](mdc:vite.config.ts):
+- Library mode for web component distribution
+- External dependencies (React, ReactDOM)
+- TypeScript declaration generation
+
+### Development Server
+- Hot reload support
+- Demo application in [src/main.tsx](mdc:src/main.tsx)
+- Live preview of component changes
+
+## Error Handling
+
+### Graceful Degradation
+- Animation fallbacks if GSAP fails
+- Error messages for failed API calls
+- Input validation and sanitization
+
+### Error Boundaries
+- Component-level error handling
+- User-friendly error messages
+- Logging for debugging
+
+## Accessibility Features
+
+### ARIA Support
+- Proper button labels
+- Role definitions
+- Screen reader announcements
+
+### Keyboard Navigation
+- Tab order management
+- Enter/Escape key handling
+- Focus indicators
+
+### Visual Accessibility
+- High contrast support
+- Reduced motion preferences
+- Scalable font sizes
+
+## Testing Integration
+
+### Test File Location
+Component tests are in [src/__tests__/chatbot.test.tsx](mdc:src/__tests__/chatbot.test.tsx)
+
+### Mock Requirements
+- GSAP animation mocking
+- Window API mocking
+- Async function mocking
+
+### Coverage Goals
+- 80%+ line coverage
+- All user interactions tested
+- Error scenarios covered

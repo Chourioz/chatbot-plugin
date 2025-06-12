@@ -1,0 +1,171 @@
+---
+description: 
+globs: *.test.*
+alwaysApply: false
+---
+# Unit Testing Patterns for React Chatbot Component
+
+## Testing Stack Configuration
+
+### Core Testing Dependencies
+- **Vitest** - Modern test runner optimized for Vite projects
+- **React Testing Library** - User-centric component testing
+- **@testing-library/user-event** - Realistic user interactions
+- **@testing-library/jest-dom** - Extended DOM matchers
+- **JSDOM** - Browser environment simulation
+
+### Configuration Files
+- Main test config: [vitest.config.ts](mdc:vitest.config.ts)
+- Test setup: [vitest.setup.ts](mdc:vitest.setup.ts)
+- TypeScript config: [tsconfig.app.json](mdc:tsconfig.app.json)
+- Package scripts: [package.json](mdc:package.json)
+
+## GSAP Animation Mocking Patterns
+
+### Complete GSAP Mock Structure
+```typescript
+vi.mock("gsap", () => ({
+  default: {
+    set: vi.fn(),
+    to: vi.fn(() => Promise.resolve()),
+    from: vi.fn(() => Promise.resolve()),
+    fromTo: vi.fn(() => Promise.resolve()),
+    delayedCall: vi.fn(),
+    timeline: vi.fn(() => ({
+      to: vi.fn().mockReturnThis(),
+      from: vi.fn().mockReturnThis(),
+      set: vi.fn().mockReturnThis(),
+      kill: vi.fn(),
+    })),
+    registerPlugin: vi.fn(),
+    getById: vi.fn(() => null),
+    killTweensOf: vi.fn(),
+  },
+}));
+```
+
+### useGSAP Hook Mock
+```typescript
+vi.mock("@gsap/react", () => ({
+  useGSAP: vi.fn((callback) => {
+    if (callback) callback();
+    return { contextSafe: vi.fn((fn) => fn) };
+  }),
+}));
+```
+
+## Component Testing Patterns
+
+### Test File Structure
+Reference the main test file: [src/__tests__/chatbot.test.tsx](mdc:src/__tests__/chatbot.test.tsx)
+
+### Selector Best Practices
+- Use CSS classes from actual implementation: [src/chatbot.tsx](mdc:src/chatbot.tsx)
+- Prefer `document.querySelector()` for unique elements
+- Use `screen.getByRole()` for interactive elements
+- Use `screen.getByPlaceholderText()` for form inputs
+
+### Test Categories
+1. **Initial Render** - Component mounting and default states
+2. **Chat Interface Interaction** - Open/close behaviors
+3. **Message Handling** - User input and bot responses
+4. **Accessibility** - ARIA labels and keyboard navigation
+5. **Error Handling** - Graceful error scenarios
+6. **Theme Customization** - CSS variable application
+
+## Mock Implementation Guidelines
+
+### Window API Mocks
+```typescript
+Object.defineProperty(window, "matchMedia", {
+  writable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  }),
+});
+```
+
+### Async Function Mocking
+```typescript
+const mockOnMessage = vi.fn().mockImplementation((_: string) => 
+  Promise.resolve("Bot response")
+);
+```
+
+## Test Execution Commands
+
+### Available Scripts
+- `npm run test` - Watch mode for development
+- `npm run test:run` - Single execution
+- `npm run test:ui` - Interactive UI
+- `npm run test:coverage` - Coverage reports
+
+### Coverage Thresholds
+- Functions: 80%
+- Branches: 80%
+- Lines: 80%
+- Statements: 80%
+
+## Component-Specific Testing Rules
+
+### Chatbot Component Testing
+When testing [src/chatbot.tsx](mdc:src/chatbot.tsx):
+
+1. **State Management**: Test both controlled and uncontrolled modes
+2. **Animation Handling**: Mock GSAP but verify callback execution
+3. **Event Handling**: Use `fireEvent` for simple events, `userEvent` for complex interactions
+4. **Async Operations**: Always use `waitFor` for state changes
+5. **Error Boundaries**: Test error scenarios with rejected promises
+
+### Selector Specificity
+- Floating button: `.floating-button`
+- Chat interface: `.chat-interface`
+- Header close button: `.chat-header button`
+- Input field: `screen.getByPlaceholderText()`
+- Send button: `screen.getByRole("button", { name: /send message/i })`
+
+## Performance Considerations
+
+### Test Optimization
+- Mock heavy animations to reduce test execution time
+- Use `vi.clearAllMocks()` in `beforeEach` for isolation
+- Prefer `fireEvent` over `userEvent` for simple interactions
+- Use `act()` wrapper for state updates when needed
+
+### Memory Management
+- Automatic cleanup with `@testing-library/react`
+- GSAP mock cleanup in test setup
+- Proper async/await usage to prevent memory leaks
+
+## Integration with CI/CD
+
+### GitHub Actions Integration
+Tests should run on:
+- Pull requests
+- Main branch pushes
+- Release tags
+
+### Coverage Reporting
+- Generate HTML reports for local development
+- JSON reports for CI integration
+- Text reports for quick terminal feedback
+
+## Debugging Test Failures
+
+### Common Issues
+1. **Multiple elements found**: Use more specific selectors
+2. **Element not found**: Check if element exists in DOM
+3. **Async timing**: Add proper `waitFor` calls
+4. **Mock not working**: Verify mock placement and syntax
+
+### Debug Tools
+- `screen.debug()` - Print current DOM
+- `screen.logTestingPlaygroundURL()` - Generate selector suggestions
+- `--reporter=verbose` - Detailed test output
