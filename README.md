@@ -36,6 +36,62 @@ yarn add react-chatbot-component
 
 ## 📦 Uso Básico
 
+### Como Custom Hook (Nuevo! 🚀)
+
+```tsx
+import React, { useState } from "react";
+import { useChatbot } from "react-chatbot-component";
+
+function CustomChatInterface() {
+  const {
+    messages,
+    isTyping,
+    isConnected,
+    error,
+    sendMessage,
+    clearMessages,
+    apiKeyValidation,
+  } = useChatbot({
+    apiKey: "client01-abc123def456",
+    welcomeMessage: "¡Hola! Soy tu asistente personalizado.",
+    maxMessages: 100,
+  });
+
+  const [inputValue, setInputValue] = useState("");
+
+  const handleSend = async () => {
+    if (inputValue.trim()) {
+      await sendMessage(inputValue.trim());
+      setInputValue("");
+    }
+  };
+
+  return (
+    <div className="my-custom-chat">
+      {/* Tu interfaz personalizada */}
+      <div className="messages">
+        {messages.map((msg) => (
+          <div key={msg.id} className={`message ${msg.sender}`}>
+            {msg.text}
+          </div>
+        ))}
+        {isTyping && <div>Escribiendo...</div>}
+      </div>
+
+      <input
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onKeyPress={(e) => e.key === "Enter" && handleSend()}
+        disabled={!isConnected}
+      />
+      <button onClick={handleSend}>Enviar</button>
+
+      {error && <div className="error">{error}</div>}
+    </div>
+  );
+}
+```
+
 ### Como Componente React
 
 ```tsx
@@ -43,8 +99,15 @@ import React from "react";
 import { ReactChatbot } from "react-chatbot-component";
 
 function App() {
-  const handleMessage = async (message: string): Promise<string> => {
+  const handleMessage = async (
+    message: string,
+    apiKey?: string
+  ): Promise<string> => {
     // Tu lógica de procesamiento de mensajes
+    console.log(
+      "Cliente autenticado con API Key:",
+      apiKey?.substring(0, 8) + "..."
+    );
     return `Recibido: ${message}`;
   };
 
@@ -55,11 +118,36 @@ function App() {
         welcomeMessage="¡Hola! ¿Cómo puedo ayudarte?"
         placeholder="Escribe tu mensaje..."
         position="bottom-right"
+        apiKey="client01-abc123def456ghi789"
         onMessage={handleMessage}
         theme={{
           primary: "#3b82f6",
           secondary: "#1e40af",
           accent: "#60a5fa",
+        }}
+      />
+    </div>
+  );
+}
+```
+
+### Uso con API Key Automática (SaaS)
+
+```tsx
+import React from "react";
+import { ReactChatbot } from "react-chatbot-component";
+
+function App() {
+  return (
+    <div>
+      {/* Sin handler personalizado - usa API automática basada en apiKey */}
+      <ReactChatbot
+        title="Agente Automático"
+        welcomeMessage="¡Conectado al agente de tu empresa!"
+        apiKey="client01-abc123def456ghi789"
+        theme={{
+          primary: "#10b981",
+          secondary: "#047857",
         }}
       />
     </div>
@@ -169,6 +257,218 @@ const { contextSafe } = useGSAP(() => {
 }, { scope: containerRef });
 ```
 
+## ⚡ Custom Hook: useChatbot
+
+### Arquitectura SOLID y DRY
+
+El hook `useChatbot` implementa los principios SOLID para una arquitectura robusta y mantenible:
+
+#### 📐 **Single Responsibility Principle (SRP)**
+
+```typescript
+// Cada servicio tiene una responsabilidad específica
+class ApiKeyValidationService {
+  static validate(apiKey?: string): ApiKeyValidation
+}
+
+class ApiConfigurationService {
+  static createConnection(apiKey: string): ApiConnection
+}
+
+class MessageProcessingService {
+  static async processMessage(...): Promise<string>
+}
+
+class ErrorHandlingService {
+  static createErrorMessage(error: unknown): string
+}
+```
+
+#### 🔓 **Open/Closed Principle (OCP)**
+
+```typescript
+// Extensible mediante handlers personalizados
+const customHandler = async (message: string, apiKey?: string) => {
+  // Tu lógica personalizada
+  return "Respuesta personalizada";
+};
+
+const { sendMessage } = useChatbot({
+  apiKey: "client01-xyz",
+  onMessage: customHandler, // Extensión sin modificación
+});
+```
+
+#### 🔄 **Liskov Substitution Principle (LSP)**
+
+```typescript
+// Cualquier MessageHandler puede ser sustituido
+type MessageHandler = (message: string, apiKey?: string) => Promise<string>;
+
+// Todos estos son intercambiables
+const handler1: MessageHandler = async (msg) => "Respuesta 1";
+const handler2: MessageHandler = async (msg, key) => "Respuesta 2";
+const handler3: MessageHandler = defaultMessageHandler;
+```
+
+#### 🎯 **Interface Segregation Principle (ISP)**
+
+```typescript
+// Interfaces específicas y enfocadas
+interface ApiKeyValidation {
+  isValid: boolean;
+  clientId: string | null;
+  error: string | null;
+}
+
+interface UseChatbotReturn {
+  // Estado
+  messages: ChatMessage[];
+  isTyping: boolean;
+  isConnected: boolean;
+
+  // Acciones
+  sendMessage: (message: string) => Promise<void>;
+  clearMessages: () => void;
+  clearError: () => void;
+}
+```
+
+#### 🔗 **Dependency Inversion Principle (DIP)**
+
+```typescript
+// El hook depende de abstracciones, no de implementaciones concretas
+const { sendMessage, messages, isTyping } = useChatbot({
+  apiKey: "client01-abc123",
+  onMessage: customHandler, // Abstracción inyectada
+});
+```
+
+### Hook API
+
+```typescript
+interface UseChatbotOptions {
+  apiKey?: string;
+  onMessage?: MessageHandler;
+  maxMessages?: number;
+  welcomeMessage?: string;
+}
+
+interface UseChatbotReturn {
+  // Estado
+  messages: ChatMessage[];
+  isTyping: boolean;
+  isConnected: boolean;
+  error: string | null;
+
+  // Acciones
+  sendMessage: (message: string) => Promise<void>;
+  clearMessages: () => void;
+  clearError: () => void;
+
+  // Validación
+  apiKeyValidation: ApiKeyValidation;
+}
+```
+
+### Ventajas del Custom Hook
+
+| Ventaja                                | Descripción                                          |
+| -------------------------------------- | ---------------------------------------------------- |
+| **🎨 UI Personalizable**               | Crea tu propia interfaz manteniendo toda la lógica   |
+| **🧪 Fácil Testing**                   | Lógica separada de UI permite tests unitarios        |
+| **🔧 Reutilizable**                    | Usa el mismo hook en múltiples componentes           |
+| **📦 Separación de Responsabilidades** | UI y lógica de negocio completamente separadas       |
+| **⚡ Performance**                     | Optimizaciones internas con `useCallback` y `useRef` |
+| **🛡️ Type Safety**                     | TypeScript completo con tipos inferidos              |
+
+## 🔑 Sistema de API Key
+
+### Validación de Cliente
+
+El componente incluye un sistema robusto de validación de clientes basado en API Keys:
+
+```tsx
+// Formato de API Key recomendado: clientId-token
+const apiKey = "client01-abc123def456ghi789";
+
+// Validación automática
+const isValidKey = validateApiKey(apiKey);
+// - Mínimo 8 caracteres
+// - Solo caracteres alfanuméricos
+// - Formato personalizable
+```
+
+### Mapeo Automático de Endpoints (SaaS Interno)
+
+```tsx
+// Configuración interna de endpoints por cliente (gestionado por el SaaS)
+const clientEndpoints = {
+  client01: "https://api.client1.com/chat",
+  client02: "https://api.client2.com/chat",
+  test1234: "https://api.test.com/chat",
+};
+
+// Endpoint por defecto para clientes no configurados
+const defaultEndpoint = "https://api.default.com/chat";
+```
+
+### Modos de Operación
+
+#### 1. Modo Handler Personalizado
+
+```tsx
+<ReactChatbot
+  apiKey="client01-xyz789"
+  onMessage={async (message, apiKey) => {
+    // Tu lógica personalizada con acceso al apiKey
+    const clientId = apiKey?.substring(0, 8);
+    return await processMessage(message, clientId);
+  }}
+/>
+```
+
+#### 2. Modo SaaS Automático
+
+```tsx
+<ReactChatbot
+  apiKey="client01-xyz789"
+  // Sin onMessage - usa el sistema automático del SaaS
+  // La configuración de API es gestionada internamente
+/>
+```
+
+#### 3. Modo Sin API Key
+
+```tsx
+<ReactChatbot
+  onMessage={async (message) => {
+    // Funciona sin apiKey pero con funcionalidad limitada
+    return "Respuesta estática";
+  }}
+/>
+```
+
+### Estructura del Request SaaS
+
+```json
+{
+  "message": "Mensaje del usuario",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "clientId": "client01",
+  "platform": "react-chatbot-component"
+}
+```
+
+### Headers Incluidos
+
+```http
+Content-Type: application/json
+Authorization: Bearer client01-abc123def456ghi789
+X-Client-ID: client01
+X-SaaS-Platform: react-chatbot-component
+```
+
 ## 📍 Posicionamiento
 
 ```tsx
@@ -186,19 +486,20 @@ type Position =
 
 ### Props Principales
 
-| Prop                  | Tipo                                   | Por Defecto                          | Descripción                    |
-| --------------------- | -------------------------------------- | ------------------------------------ | ------------------------------ |
-| `title`               | `string`                               | `"Chat Assistant"`                   | Título del chat                |
-| `welcomeMessage`      | `string`                               | `"Hello! How can I help you today?"` | Mensaje de bienvenida          |
-| `placeholder`         | `string`                               | `"Type your message..."`             | Placeholder del input          |
-| `position`            | `Position`                             | `"bottom-right"`                     | Posición del chatbot           |
-| `theme`               | `ChatbotTheme`                         | `defaultTheme`                       | Tema personalizado             |
-| `onMessage`           | `(message: string) => Promise<string>` | -                                    | Handler de mensajes            |
-| `maxMessages`         | `number`                               | `100`                                | Máximo de mensajes             |
-| `showTypingIndicator` | `boolean`                              | `true`                               | Mostrar indicador de escritura |
-| `isOpen`              | `boolean`                              | -                                    | Control externo del estado     |
-| `onToggle`            | `(isOpen: boolean) => void`            | -                                    | Callback de cambio de estado   |
-| `className`           | `string`                               | -                                    | Clase CSS adicional            |
+| Prop                  | Tipo                                                    | Por Defecto                          | Descripción                       |
+| --------------------- | ------------------------------------------------------- | ------------------------------------ | --------------------------------- |
+| `title`               | `string`                                                | `"Chat Assistant"`                   | Título del chat                   |
+| `welcomeMessage`      | `string`                                                | `"Hello! How can I help you today?"` | Mensaje de bienvenida             |
+| `placeholder`         | `string`                                                | `"Type your message..."`             | Placeholder del input             |
+| `position`            | `Position`                                              | `"bottom-right"`                     | Posición del chatbot              |
+| `theme`               | `ChatbotTheme`                                          | `defaultTheme`                       | Tema personalizado                |
+| `apiKey`              | `string`                                                | -                                    | Clave API para autenticación SaaS |
+| `onMessage`           | `(message: string, apiKey?: string) => Promise<string>` | -                                    | Handler de mensajes personalizado |
+| `maxMessages`         | `number`                                                | `100`                                | Máximo de mensajes                |
+| `showTypingIndicator` | `boolean`                                               | `true`                               | Mostrar indicador de escritura    |
+| `isOpen`              | `boolean`                                               | -                                    | Control externo del estado        |
+| `onToggle`            | `(isOpen: boolean) => void`                             | -                                    | Callback de cambio de estado      |
+| `className`           | `string`                                                | -                                    | Clase CSS adicional               |
 
 ### Interfaces TypeScript
 

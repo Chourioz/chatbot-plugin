@@ -1,6 +1,7 @@
 // Main exports
 export { ReactChatbot as default } from "./chatbot";
 export { ReactChatbot } from "./chatbot";
+export { useChatbot } from "./hooks/useChatbot";
 
 // Type exports
 export type {

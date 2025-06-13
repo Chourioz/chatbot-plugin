@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useEffect, useRef, useCallback, useState } from "react";
 import clsx from "clsx";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import type { ChatbotProps, ChatMessage, ChatbotTheme } from "./types";
+import type { ChatbotProps, ChatbotTheme } from "./types";
+import { useChatbot } from "./hooks/useChatbot";
 
 // Default theme values
 const defaultTheme: ChatbotTheme = {
@@ -23,6 +24,7 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
   placeholder = "Type your message...",
   position = "bottom-right",
   theme = {},
+  apiKey,
   onMessage,
   maxMessages = 100,
   showTypingIndicator = true,
@@ -31,10 +33,26 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
   onToggle,
   className,
 }) => {
+  // Local state for UI
   const [internalIsOpen, setInternalIsOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+  
+  // Use custom hook for all business logic
+  const {
+    messages,
+    isTyping,
+    isConnected,
+    error,
+    sendMessage,
+    clearMessages,
+    clearError,
+    apiKeyValidation,
+  } = useChatbot({
+    apiKey,
+    onMessage,
+    maxMessages,
+    welcomeMessage,
+  });
 
   // Refs for GSAP animations
   const containerRef = useRef<HTMLDivElement>(null);
@@ -55,6 +73,15 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
   useEffect(() => {
     console.log('🔄 Chatbot position changed to:', position);
   }, [position]);
+
+  // Log API Key validation status
+  useEffect(() => {
+    if (apiKeyValidation.isValid) {
+      console.log('🔑 API Key validated for client:', apiKeyValidation.clientId);
+    } else if (apiKeyValidation.error) {
+      console.warn('⚠️ API Key validation failed:', apiKeyValidation.error);
+    }
+  }, [apiKeyValidation.isValid, apiKeyValidation.clientId, apiKeyValidation.error]);
 
   // GSAP animations setup
   const { contextSafe } = useGSAP(
@@ -334,19 +361,7 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
     }
   }, [mergedTheme]);
 
-  // Initialize with welcome message
-  useEffect(() => {
-    if (welcomeMessage && messages.length === 0) {
-      setMessages([
-        {
-          id: "welcome",
-          text: welcomeMessage,
-          sender: "bot",
-          timestamp: new Date(),
-        },
-      ]);
-    }
-  }, [welcomeMessage]);
+  // Welcome message is now handled by the useChatbot hook
 
   // Fallback to ensure elements are visible if animations fail
   useEffect(() => {
@@ -423,14 +438,7 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
   const handleSendMessage = contextSafe(async (text: string) => {
     if (!text.trim()) return;
 
-    const userMessage: ChatMessage = {
-      id: `user-${Date.now()}`,
-      text: text.trim(),
-      sender: "user",
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev.slice(-(maxMessages - 1)), userMessage]);
+    // Clear input immediately
     setInputValue("");
 
     // Enhanced input feedback animation
@@ -448,32 +456,8 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
       });
     }
 
-    if (onMessage) {
-      setIsTyping(true);
-      try {
-        const response = await onMessage(text.trim());
-        const botMessage: ChatMessage = {
-          id: `bot-${Date.now()}`,
-          text: response,
-          sender: "bot",
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [...prev.slice(-(maxMessages - 1)), botMessage]);
-      } catch (error) {
-        const errorMessage: ChatMessage = {
-          id: `error-${Date.now()}`,
-          text: "Sorry, I encountered an error. Please try again.",
-          sender: "bot",
-          timestamp: new Date(),
-        };
-        setMessages((prev) => [
-          ...prev.slice(-(maxMessages - 1)),
-          errorMessage,
-        ]);
-      } finally {
-        setIsTyping(false);
-      }
-    }
+    // Use the hook's sendMessage function which handles all business logic
+    await sendMessage(text.trim());
   });
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

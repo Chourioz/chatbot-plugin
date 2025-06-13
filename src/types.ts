@@ -23,7 +23,8 @@ export interface ChatbotConfig {
   placeholder?: string;
   position?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
   theme?: ChatbotTheme;
-  onMessage?: (message: string) => Promise<string>;
+  apiKey?: string;
+  onMessage?: (message: string, apiKey?: string) => Promise<string>;
   maxMessages?: number;
   showTypingIndicator?: boolean;
   enableSound?: boolean;
@@ -35,7 +36,10 @@ export interface ChatbotProps extends ChatbotConfig {
   className?: string;
 }
 
-export type MessageHandler = (message: string) => Promise<string>;
+export type MessageHandler = (
+  message: string,
+  apiKey?: string
+) => Promise<string>;
 
 export interface FloatingPosition {
   bottom?: string;
