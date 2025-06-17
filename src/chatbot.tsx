@@ -3,6 +3,7 @@ import clsx from "clsx";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import SplitType from "split-type";
+import ChatInput from "./components/ChatInput";
 import type { ChatbotProps, ChatbotTheme } from "./types";
 import { useChatbot } from "./hooks/useChatbot";
 
@@ -36,7 +37,6 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
 }) => {
   // Local state for UI
   const [internalIsOpen, setInternalIsOpen] = useState(false);
-  const [inputValue, setInputValue] = useState("");
   
   // Use custom hook for all business logic
   const {
@@ -69,7 +69,7 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
   const closeIconRef = useRef<SVGSVGElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+
   const typingIndicatorRef = useRef<HTMLDivElement>(null);
 
   const isOpen =
@@ -540,14 +540,7 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
     }
   }, [messages]);
 
-  // Focus input when opened with proper delay
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-      gsap.delayedCall(0.6, () => {
-        inputRef.current?.focus();
-      });
-    }
-  }, [isOpen]);
+
 
   const handleToggle = useCallback(() => {
     const newIsOpen = !isOpen;
@@ -574,37 +567,13 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
     onToggle?.(newIsOpen);
   }, [isOpen, controlledIsOpen, onToggle]);
 
-  const handleSendMessage = contextSafe(async (text: string) => {
+  // Simplified message handler for the new ChatInput component
+  const handleSendMessage = useCallback(async (text: string) => {
     if (!text.trim()) return;
-
-    // Clear input immediately
-    setInputValue("");
-
-    // Enhanced input feedback animation
-    if (inputRef.current) {
-      const tl = gsap.timeline();
-      tl.to(inputRef.current, {
-        scale: 1.05,
-        duration: 0.1,
-        ease: "power2.out"
-      })
-      .to(inputRef.current, {
-        scale: 1,
-        duration: 0.3,
-        ease: "elastic.out(1, 0.5)"
-      });
-    }
 
     // Use the hook's sendMessage function which handles all business logic
     await sendMessage(text.trim());
-  });
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage(inputValue);
-    }
-  };
+  }, [sendMessage]);
 
   // Enhanced hover animations
   const handleButtonHover = contextSafe(() => {
@@ -730,40 +699,13 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
-        <div className="p-4 border-t border-chatbot-border chat-input-container">
-          <div className="flex space-x-2">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder={placeholder}
-              className="flex-1 px-3 py-2 border border-chatbot-border rounded-lg focus:outline-none focus:ring-2 focus:ring-chatbot-primary text-chatbot-text bg-chatbot-background chat-input"
-            />
-            <button
-              onClick={() => handleSendMessage(inputValue)}
-              disabled={!inputValue.trim()}
-              className="px-4 py-2 bg-chatbot-primary text-white rounded-lg hover:bg-chatbot-secondary disabled:opacity-50 disabled:cursor-not-allowed send-button"
-              aria-label="Send message"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
+        {/* Input - Isolated Component */}
+        <ChatInput
+          onSubmit={handleSendMessage}
+          placeholder={placeholder}
+          disabled={isTyping}
+          maxLength={1000}
+        />
       </div>
 
       {/* Floating Button - Fixed position with overlapping icons */}
