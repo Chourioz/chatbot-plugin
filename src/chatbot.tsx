@@ -704,7 +704,6 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
           onSubmit={handleSendMessage}
           placeholder={placeholder}
           disabled={isTyping}
-          maxLength={1000}
         />
       </div>
 

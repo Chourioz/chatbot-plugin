@@ -5,7 +5,6 @@ interface ChatInputProps {
   onSubmit: (message: string) => void;
   placeholder?: string;
   disabled?: boolean;
-  maxLength?: number;
 }
 
 // Componente puro e aislado para el input del chat
@@ -13,8 +12,7 @@ interface ChatInputProps {
 const ChatInput = memo<ChatInputProps>(({ 
   onSubmit, 
   placeholder = "Type your message...", 
-  disabled = false,
-  maxLength = 1000 
+  disabled = false
 }) => {
   // Estado local para el valor del input
   // Esto evita que el componente padre se re-renderice en cada keystroke
@@ -24,14 +22,8 @@ const ChatInput = memo<ChatInputProps>(({
   // Solo cambia si alguna dependencia cambia
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    
-    // Respeta el límite de caracteres si está definido
-    if (maxLength && newValue.length > maxLength) {
-      return;
-    }
-    
     setInputValue(newValue);
-  }, [maxLength]);
+  }, []);
 
   // Función memoizada para manejar el submit
   const handleSubmit = useCallback((e: React.FormEvent) => {
@@ -65,7 +57,6 @@ const ChatInput = memo<ChatInputProps>(({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
-          maxLength={maxLength}
           className="chat-input"
           autoComplete="off"
         />
@@ -89,11 +80,6 @@ const ChatInput = memo<ChatInputProps>(({
           </svg>
         </button>
       </div>
-      {maxLength && (
-        <div className="character-count">
-          {inputValue.length}/{maxLength}
-        </div>
-      )}
     </form>
   );
 });
