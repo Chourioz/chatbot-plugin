@@ -47,6 +47,7 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
     clearMessages,
     clearError,
     apiKeyValidation,
+    validateApiKey,
   } = useChatbot({
     apiKey,
     onMessage,
@@ -77,11 +78,14 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
   // Log API Key validation status
   useEffect(() => {
     if (apiKeyValidation.isValid) {
-      console.log('🔑 API Key validated for client:', apiKeyValidation.clientId);
+      console.log('🔑 API Key validated for client:', apiKeyValidation.keyId);
+      if (apiKeyValidation.user) {
+        console.log('👤 User:', apiKeyValidation.user.fullName, `(${apiKeyValidation.user.email})`);
+      }
     } else if (apiKeyValidation.error) {
       console.warn('⚠️ API Key validation failed:', apiKeyValidation.error);
     }
-  }, [apiKeyValidation.isValid, apiKeyValidation.clientId, apiKeyValidation.error]);
+  }, [apiKeyValidation.isValid, apiKeyValidation.keyId, apiKeyValidation.error, apiKeyValidation.user]);
 
   // GSAP animations setup
   const { contextSafe } = useGSAP(

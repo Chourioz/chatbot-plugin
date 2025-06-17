@@ -250,6 +250,7 @@ const DemoApp: React.FC = () => {
         maxMessages={50}
         showTypingIndicator={true}
         className="demo-chatbot"
+        apiKey="sk_b151d0cef082828f860a4b9ba5c1b7f253548a8a196b2539bd3b8086318b431d"
       />
     </div>
   );

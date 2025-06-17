@@ -1,11 +1,21 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import type { ChatMessage, MessageHandler } from "../types";
 
 // Types for the hook
 interface ApiKeyValidation {
   isValid: boolean;
-  clientId: string | null;
+  isActive?: boolean;
+  keyId?: string;
+  keyName?: string;
+  user?: {
+    id: string;
+    email: string;
+    fullName: string;
+  };
+  lastUsed?: string;
+  usageCount?: number;
   error: string | null;
+  isLoading?: boolean;
 }
 
 interface ApiConnection {
@@ -19,6 +29,7 @@ interface ChatbotState {
   isTyping: boolean;
   isConnected: boolean;
   error: string | null;
+  apiKeyValidation: ApiKeyValidation;
 }
 
 interface UseChatbotOptions {
@@ -39,82 +50,311 @@ interface UseChatbotReturn {
   sendMessage: (message: string) => Promise<void>;
   clearMessages: () => void;
   clearError: () => void;
+  validateApiKey: () => Promise<void>;
 
   // Validation
   apiKeyValidation: ApiKeyValidation;
 }
 
+// API Key Validation Response from server
+interface ApiKeyValidationResponse {
+  isValid: boolean;
+  isActive: boolean;
+  keyId: string;
+  keyName: string;
+  user: {
+    id: string;
+    email: string;
+    fullName: string;
+  };
+  lastUsed: string;
+  usageCount: number;
+}
+
+interface ApiResponse {
+  success: boolean;
+  message: string;
+  data?: ApiKeyValidationResponse;
+}
+
+// Environment Configuration (12-factor app pattern)
+interface AppConfig {
+  env: "development" | "staging" | "production";
+  validationEndpoint: string;
+  chatEndpoint: string;
+  timeout: number;
+}
+
+class ConfigService {
+  private static instance: ConfigService;
+  private config: AppConfig;
+
+  private constructor() {
+    this.config = this.createConfig();
+  }
+
+  static getInstance(): ConfigService {
+    if (!ConfigService.instance) {
+      ConfigService.instance = new ConfigService();
+    }
+    return ConfigService.instance;
+  }
+
+  private createConfig(): AppConfig {
+    // Determine environment based on common patterns
+    const env = this.determineEnvironment();
+
+    switch (env) {
+      case "production":
+        return {
+          env: "production",
+          validationEndpoint:
+            "https://api.reactchatbot.io/api/v1/api-keys/validate",
+          chatEndpoint: "https://api.reactchatbot.io/api/v1/chat",
+          timeout: 30000,
+        };
+
+      case "staging":
+        return {
+          env: "staging",
+          validationEndpoint:
+            "https://api.staging.reactchatbot.io/api/v1/api-keys/validate",
+          chatEndpoint: "https://api.staging.reactchatbot.io/api/v1/chat",
+          timeout: 30000,
+        };
+
+      case "development":
+      default:
+        return {
+          env: "development",
+          validationEndpoint: "http://localhost:3000/api/v1/api-keys/validate",
+          chatEndpoint: "http://localhost:3000/api/v1/chat",
+          timeout: 30000,
+        };
+    }
+  }
+
+  private determineEnvironment(): "development" | "staging" | "production" {
+    // Priority order for environment detection
+
+    // 1. Explicit environment variable (if available in the hosting environment)
+    if (typeof window !== "undefined") {
+      // Client-side: check for injected environment variables
+      const injectedEnv = (window as any).__REACT_CHATBOT_ENV__;
+      if (injectedEnv) return injectedEnv;
+    }
+
+    // 2. URL-based detection (common SaaS pattern)
+    if (typeof window !== "undefined") {
+      const hostname = window.location.hostname;
+
+      if (hostname.includes("staging") || hostname.includes("dev")) {
+        return "staging";
+      }
+
+      if (
+        hostname === "localhost" ||
+        hostname === "127.0.0.1" ||
+        hostname.startsWith("192.168.")
+      ) {
+        return "development";
+      }
+
+      // Production domains
+      return "production";
+    }
+
+    // 3. Node.js environment detection (for SSR)
+    if (typeof process !== "undefined" && process.env) {
+      const nodeEnv = process.env.NODE_ENV;
+      const appEnv = process.env.REACT_CHATBOT_ENV;
+
+      if (appEnv) {
+        return appEnv as "development" | "staging" | "production";
+      }
+
+      if (nodeEnv === "development") return "development";
+      if (nodeEnv === "production") return "production";
+    }
+
+    // 4. Default fallback
+    return "development";
+  }
+
+  getConfig(): AppConfig {
+    return this.config;
+  }
+
+  // Allow manual override for testing/special cases
+  setEnvironment(env: "development" | "staging" | "production"): void {
+    this.config = this.createConfig();
+    console.log(`🔧 React Chatbot environment set to: ${env}`);
+  }
+}
+
 // API Configuration Service (Single Responsibility)
 class ApiConfigurationService {
-  private static readonly CLIENT_ENDPOINTS: Record<string, string> = {
-    client01: "https://api.client1.com/chat",
-    client02: "https://api.client2.com/chat",
-    test1234: "https://api.test.com/chat",
-  };
+  private static config = ConfigService.getInstance().getConfig();
 
-  private static readonly DEFAULT_ENDPOINT = "https://api.default.com/chat";
-  private static readonly DEFAULT_TIMEOUT = 30000;
+  static getValidationEndpoint(): string {
+    return this.config.validationEndpoint;
+  }
 
-  static getEndpoint(clientId: string): string {
-    return this.CLIENT_ENDPOINTS[clientId] || this.DEFAULT_ENDPOINT;
+  static getChatEndpoint(): string {
+    return this.config.chatEndpoint;
   }
 
   static createConnection(apiKey: string): ApiConnection {
-    const clientId = this.extractClientId(apiKey);
-
     return {
-      endpoint: this.getEndpoint(clientId),
+      endpoint: this.getChatEndpoint(),
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
-        "X-Client-ID": clientId,
+        "X-API-Key": apiKey,
         "X-SaaS-Platform": "react-chatbot-component",
+        "X-Environment": this.config.env,
       },
-      timeout: this.DEFAULT_TIMEOUT,
+      timeout: this.config.timeout,
     };
-  }
-
-  private static extractClientId(apiKey: string): string {
-    return apiKey.substring(0, 8);
   }
 }
 
 // API Key Validation Service (Single Responsibility)
 class ApiKeyValidationService {
-  private static readonly MIN_LENGTH = 8;
-  private static readonly VALID_PATTERN = /^[a-zA-Z0-9]+$/;
+  private static readonly API_KEY_PATTERN = /^sk_[a-f0-9]{64}$/;
+  private static readonly VALIDATION_TIMEOUT = 10000;
 
-  static validate(apiKey?: string): ApiKeyValidation {
+  static validateFormat(apiKey?: string): {
+    isValid: boolean;
+    error: string | null;
+  } {
     if (!apiKey) {
       return {
         isValid: false,
-        clientId: null,
         error: "API Key is required for message processing",
       };
     }
 
-    if (apiKey.length < this.MIN_LENGTH) {
+    if (!this.API_KEY_PATTERN.test(apiKey)) {
       return {
         isValid: false,
-        clientId: null,
-        error: `API Key must be at least ${this.MIN_LENGTH} characters long`,
-      };
-    }
-
-    if (!this.VALID_PATTERN.test(apiKey)) {
-      return {
-        isValid: false,
-        clientId: null,
         error:
-          "API Key contains invalid characters. Only alphanumeric characters are allowed",
+          "Invalid API key format. Expected format: sk_[64 hexadecimal characters]",
       };
     }
 
     return {
       isValid: true,
-      clientId: apiKey.substring(0, 8),
       error: null,
     };
+  }
+
+  static async validateWithServer(apiKey: string): Promise<ApiKeyValidation> {
+    const formatValidation = this.validateFormat(apiKey);
+    if (!formatValidation.isValid) {
+      return {
+        isValid: false,
+        error: formatValidation.error,
+        isLoading: false,
+      };
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      this.VALIDATION_TIMEOUT
+    );
+
+    try {
+      const endpoint = ApiConfigurationService.getValidationEndpoint();
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": apiKey,
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        if (response.status === 400) {
+          return {
+            isValid: false,
+            error: "Invalid API key format or missing key",
+            isLoading: false,
+          };
+        }
+
+        if (response.status === 401) {
+          const errorData: ApiResponse = await response.json().catch(() => ({
+            success: false,
+            message: "Invalid or expired API key",
+          }));
+
+          return {
+            isValid: false,
+            error: errorData.message || "Invalid or expired API key",
+            isLoading: false,
+          };
+        }
+
+        throw new Error(
+          `Validation failed: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const responseData: ApiResponse = await response.json();
+
+      if (!responseData.success || !responseData.data) {
+        return {
+          isValid: false,
+          error: responseData.message || "API key validation failed",
+          isLoading: false,
+        };
+      }
+
+      const data = responseData.data;
+
+      return {
+        isValid: data.isValid && data.isActive,
+        isActive: data.isActive,
+        keyId: data.keyId,
+        keyName: data.keyName,
+        user: data.user,
+        lastUsed: data.lastUsed,
+        usageCount: data.usageCount,
+        error: null,
+        isLoading: false,
+      };
+    } catch (error) {
+      clearTimeout(timeoutId);
+
+      if (error instanceof Error) {
+        if (error.name === "AbortError") {
+          return {
+            isValid: false,
+            error: "API key validation timeout. Please try again.",
+            isLoading: false,
+          };
+        }
+
+        return {
+          isValid: false,
+          error: error.message,
+          isLoading: false,
+        };
+      }
+
+      return {
+        isValid: false,
+        error:
+          "Failed to validate API key. Please check your connection and try again.",
+        isLoading: false,
+      };
+    }
   }
 }
 
@@ -138,7 +378,7 @@ class MessageProcessingService {
         body: JSON.stringify({
           message,
           timestamp: new Date().toISOString(),
-          clientId: apiKey.substring(0, 8),
+          keyId: apiKey.substring(3, 11), // Extract key identifier from sk_ prefix
           platform: "react-chatbot-component",
         }),
         signal: controller.signal,
@@ -184,6 +424,13 @@ class ErrorHandlingService {
   }
 }
 
+// Debug logging for environment detection
+const config = ConfigService.getInstance().getConfig();
+console.log(
+  `🌍 React Chatbot Component initialized in ${config.env} environment`
+);
+console.log(`🔗 Validation endpoint: ${config.validationEndpoint}`);
+
 // Main Custom Hook (Dependency Inversion + Interface Segregation)
 export const useChatbot = ({
   apiKey,
@@ -197,25 +444,75 @@ export const useChatbot = ({
     isTyping: false,
     isConnected: false,
     error: null,
+    apiKeyValidation: {
+      isValid: false,
+      error: null,
+      isLoading: false,
+    },
   });
 
   // Refs for stable references
   const apiConnectionRef = useRef<ApiConnection | null>(null);
   const messageIdCounterRef = useRef(0);
 
-  // Validation (computed on every render - lightweight operation)
-  const apiKeyValidation = ApiKeyValidationService.validate(apiKey);
+  // Validate API key function
+  const validateApiKey = useCallback(async () => {
+    if (!apiKey) {
+      setState((prev) => ({
+        ...prev,
+        apiKeyValidation: {
+          isValid: false,
+          error: "API Key is required for validation",
+          isLoading: false,
+        },
+      }));
+      return;
+    }
 
-  // Initialize API connection when apiKey changes
+    setState((prev) => ({
+      ...prev,
+      apiKeyValidation: {
+        ...prev.apiKeyValidation,
+        isLoading: true,
+        error: null,
+      },
+    }));
+
+    try {
+      const validationResult = await ApiKeyValidationService.validateWithServer(
+        apiKey
+      );
+      setState((prev) => ({
+        ...prev,
+        apiKeyValidation: validationResult,
+      }));
+    } catch (error) {
+      ErrorHandlingService.logError("API key validation", error);
+      setState((prev) => ({
+        ...prev,
+        apiKeyValidation: {
+          isValid: false,
+          error: ErrorHandlingService.createErrorMessage(error),
+          isLoading: false,
+        },
+      }));
+    }
+  }, [apiKey]);
+
+  // Initialize API connection when validation succeeds
   const initializeConnection = useCallback(() => {
-    if (apiKeyValidation.isValid && apiKey) {
+    if (state.apiKeyValidation.isValid && apiKey) {
       try {
         apiConnectionRef.current =
           ApiConfigurationService.createConnection(apiKey);
-        setState((prev) => ({ ...prev, isConnected: true, error: null }));
+        setState((prev) => ({
+          ...prev,
+          isConnected: true,
+          error: null,
+        }));
         console.log(
           "🔑 API connection established for client:",
-          apiKeyValidation.clientId
+          state.apiKeyValidation.keyId
         );
       } catch (error) {
         ErrorHandlingService.logError("Connection initialization", error);
@@ -230,23 +527,40 @@ export const useChatbot = ({
       setState((prev) => ({
         ...prev,
         isConnected: false,
-        error: apiKeyValidation.error,
+        error: state.apiKeyValidation.error,
       }));
     }
   }, [
     apiKey,
-    apiKeyValidation.isValid,
-    apiKeyValidation.clientId,
-    apiKeyValidation.error,
+    state.apiKeyValidation.isValid,
+    state.apiKeyValidation.keyId,
+    state.apiKeyValidation.error,
   ]);
 
-  // Initialize connection on apiKey change
-  useState(() => {
+  // Validate API key when it changes
+  useEffect(() => {
+    if (apiKey) {
+      validateApiKey();
+    } else {
+      setState((prev) => ({
+        ...prev,
+        apiKeyValidation: {
+          isValid: false,
+          error: "API Key is required for message processing",
+          isLoading: false,
+        },
+        isConnected: false,
+      }));
+    }
+  }, [apiKey, validateApiKey]);
+
+  // Initialize connection when validation state changes
+  useEffect(() => {
     initializeConnection();
-  });
+  }, [initializeConnection]);
 
   // Initialize welcome message
-  useState(() => {
+  useEffect(() => {
     if (welcomeMessage && state.messages.length === 0) {
       const welcomeMsg: ChatMessage = {
         id: `welcome-${Date.now()}`,
@@ -259,7 +573,7 @@ export const useChatbot = ({
         messages: [welcomeMsg],
       }));
     }
-  });
+  }, [welcomeMessage, state.messages.length]);
 
   // Message ID generator
   const generateMessageId = useCallback(
@@ -314,12 +628,13 @@ export const useChatbot = ({
 
       // Determine message handler (Dependency Inversion)
       const messageHandler =
-        onMessage || (apiKeyValidation.isValid ? defaultMessageHandler : null);
+        onMessage ||
+        (state.apiKeyValidation.isValid ? defaultMessageHandler : null);
 
       if (!messageHandler) {
         const errorMessage: ChatMessage = {
           id: generateMessageId("error"),
-          text: "Please provide an API Key or custom message handler to enable chat functionality.",
+          text: "Please provide a valid API Key or custom message handler to enable chat functionality.",
           sender: "bot",
           timestamp: new Date(),
         };
@@ -365,7 +680,7 @@ export const useChatbot = ({
       generateMessageId,
       addMessage,
       onMessage,
-      apiKeyValidation.isValid,
+      state.apiKeyValidation.isValid,
       defaultMessageHandler,
       apiKey,
     ]
@@ -393,8 +708,9 @@ export const useChatbot = ({
     sendMessage,
     clearMessages,
     clearError,
+    validateApiKey,
 
     // Validation
-    apiKeyValidation,
+    apiKeyValidation: state.apiKeyValidation,
   };
 };
