@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useCallback, useState } from "react";
 import clsx from "clsx";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import SplitType from "split-type";
 import type { ChatbotProps, ChatbotTheme } from "./types";
 import { useChatbot } from "./hooks/useChatbot";
 
@@ -41,19 +42,24 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
   const {
     messages,
     isTyping,
-    isConnected,
-    error,
     sendMessage,
-    clearMessages,
-    clearError,
     apiKeyValidation,
-    validateApiKey,
   } = useChatbot({
     apiKey,
     onMessage,
     maxMessages,
     welcomeMessage,
   });
+
+  // Debug: Log messages changes
+  useEffect(() => {
+    console.log('💬 Messages updated:', messages);
+    console.log('📊 Total messages:', messages.length);
+    const lastMessage = messages[messages.length - 1];
+    if (lastMessage) {
+      console.log('📧 Last message:', lastMessage);
+    }
+  }, [messages]);
 
   // Refs for GSAP animations
   const containerRef = useRef<HTMLDivElement>(null);
@@ -86,6 +92,8 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
       console.warn('⚠️ API Key validation failed:', apiKeyValidation.error);
     }
   }, [apiKeyValidation.isValid, apiKeyValidation.keyId, apiKeyValidation.error, apiKeyValidation.user]);
+
+
 
   // GSAP animations setup
   const { contextSafe } = useGSAP(
@@ -166,6 +174,90 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
     },
     { scope: containerRef }
   );
+
+  // Function to animate bot messages with split text effect
+  const animateBotMessage = contextSafe((messageElement: HTMLElement) => {
+    console.log('🎬 Starting SplitText animation for bot message');
+    
+    // Only animate bot messages
+    if (!messageElement.classList.contains('bot-message')) {
+      return;
+    }
+    
+    const messageContainer = messageElement.querySelector('.max-w-xs');
+    const textContainer = messageElement.querySelector('.message-text');
+    
+    if (!textContainer || !messageContainer) {
+      console.log('❌ Required elements not found');
+      return;
+    }
+
+    const textContent = textContainer.textContent?.substring(0, 30) + "...";
+    console.log('📝 Animating text:', textContent);
+
+    // Remove the pre-animation class to allow GSAP control
+    messageElement.classList.remove('pre-animation');
+    console.log('🔓 Removed pre-animation class for GSAP control');
+
+    // Check current visibility state after class removal
+    const containerOpacity = window.getComputedStyle(messageContainer).opacity;
+    const textOpacity = window.getComputedStyle(textContainer).opacity;
+    console.log('📊 Opacity after class removal - Container:', containerOpacity, 'Text:', textOpacity);
+
+    // Initialize SplitType to split text into words
+    const split = new SplitType(textContainer as HTMLElement, {
+      types: 'words',
+      wordClass: 'split-word'
+    });
+
+    if (!split.words || split.words.length === 0) {
+      console.log('❌ SplitType failed to create words');
+      // Restore visibility if split failed
+      gsap.set(messageContainer, { opacity: 1 });
+      gsap.set(textContainer, { opacity: 1 });
+      return;
+    }
+
+    console.log('✨ Animating', split.words.length, 'words with stagger effect');
+
+    // Set initial state for words
+    gsap.set(split.words, {
+      opacity: 0,
+      y: 15,
+      scale: 0.9
+    });
+
+    // Set initial state for containers
+    gsap.set(messageContainer, { opacity: 0, y: 10 });
+    gsap.set(textContainer, { opacity: 1 }); // Text container visible, but words are hidden
+
+    // Animate the message container entrance first
+    gsap.to(messageContainer, { 
+      y: 0, 
+      opacity: 1, 
+      duration: 0.3,
+      ease: "power2.out",
+      onComplete: () => {
+        // After container is visible, animate words
+        gsap.to(split.words, {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.4,
+          ease: "back.out(1.7)",
+          stagger: {
+            amount: 0.6,
+            from: "start"
+          },
+          onComplete: () => {
+            console.log('✅ SplitText animation completed');
+            // Clean up split after animation completes
+            split.revert();
+          }
+        });
+      }
+    });
+  });
 
   // Enhanced chat interface open/close animation
   useGSAP(
@@ -316,39 +408,82 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
     { dependencies: [isOpen], scope: containerRef }
   );
 
-  // Enhanced new message animation
-  useGSAP(
-    () => {
-      if (!messagesContainerRef.current) return;
+  // Enhanced new message animation - using different approach
+  useEffect(() => {
+    if (messages.length === 0) return;
+    
+    console.log('🔄 New message effect triggered');
+    console.log('📊 Messages count:', messages.length);
+    
+    // Use a small delay to ensure DOM is updated
+    const timer = setTimeout(() => {
+      if (!messagesContainerRef.current) {
+        console.log('❌ Messages container ref not available');
+        return;
+      }
 
-      const messageElements = messagesContainerRef.current.querySelectorAll(
-        ".message-bubble:last-child"
-      );
-      if (messageElements.length > 0) {
-        const lastMessage = messageElements[messageElements.length - 1];
+      const allMessageElements = messagesContainerRef.current.querySelectorAll('.message-bubble');
+      console.log('🔍 Found total message elements:', allMessageElements.length);
+      
+      if (allMessageElements.length > 0) {
+        const lastMessage = allMessageElements[allMessageElements.length - 1];
         const isUserMessage = lastMessage.classList.contains('user-message');
         
-        gsap.fromTo(
-          lastMessage,
-          {
-            opacity: 0,
-            y: 30,
-            scale: 0.8,
-            x: isUserMessage ? 20 : -20
-          },
-          {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            x: 0,
-            duration: 0.5,
-            ease: "back.out(1.7)",
-          }
-        );
+        console.log('📨 Last message element:', lastMessage);
+        console.log('👤 Is user message:', isUserMessage);
+        console.log('🤖 Is bot message:', !isUserMessage);
+        console.log('📝 Message classes:', lastMessage.className);
+        
+        // Check if this message was already animated
+        if (lastMessage.getAttribute('data-animated') === 'true') {
+          console.log('⏭️ Message already animated, skipping');
+          return;
+        }
+        
+        // Mark as animated
+        lastMessage.setAttribute('data-animated', 'true');
+        
+        // Different animations for user vs bot messages
+        if (isUserMessage) {
+          // User messages get the standard entrance animation
+          gsap.fromTo(
+            lastMessage,
+            {
+              opacity: 0,
+              y: 30,
+              scale: 0.8,
+              x: 20
+            },
+            {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              x: 0,
+              duration: 0.5,
+              ease: "back.out(1.7)",
+              onStart: () => {
+                console.log('🚀 User message entrance animation started');
+              }
+            }
+          );
+        } else {
+          // Bot messages get minimal entrance animation (the bubble will handle its own animation)
+          console.log('🤖 Setting up bot message for SplitText animation');
+          gsap.set(lastMessage, { opacity: 1 }); // Make the message bubble visible immediately
+          
+          // Add a small delay to ensure CSS has been applied and DOM is stable
+          gsap.delayedCall(0.05, () => {
+            console.log('⏰ Starting SplitText animation after micro-delay');
+            animateBotMessage(lastMessage as HTMLElement);
+          });
+        }
+      } else {
+        console.log('❌ No message elements found');
       }
-    },
-    { dependencies: [messages.length], scope: containerRef }
-  );
+    }, 50); // Small delay to ensure DOM is updated
+    
+    return () => clearTimeout(timer);
+  }, [messages, animateBotMessage]);
 
   // Apply CSS variables for theming
   useEffect(() => {
@@ -542,26 +677,40 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
           ref={messagesContainerRef}
           className="flex-1 overflow-y-auto p-4 space-y-3 chat-messages"
         >
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={clsx(
-                "flex message-bubble",
-                message.sender === "user" ? "justify-end user-message" : "justify-start bot-message"
-              )}
-            >
+          {messages.map((message, index) => {
+            // Only log bot messages for debugging
+            if (message.sender === "bot") {
+              console.log(`🤖 Rendering bot message ${index}:`, {
+                id: message.id,
+                text: message.text.substring(0, 50) + "..."
+              });
+            }
+            
+            return (
               <div
+                key={message.id}
                 className={clsx(
-                  "max-w-xs px-3 py-2 rounded-lg text-sm",
-                  message.sender === "user"
-                    ? "bg-chatbot-primary text-white"
-                    : "bg-chatbot-surface text-chatbot-text border border-chatbot-border"
+                  "flex message-bubble",
+                  message.sender === "user" ? "justify-end user-message" : "justify-start bot-message",
+                  // Add pre-animation class to bot messages
+                  message.sender === "bot" && "pre-animation"
                 )}
               >
-                {message.text}
+                <div
+                  className={clsx(
+                    "max-w-xs px-3 py-2 rounded-lg text-sm",
+                    message.sender === "user"
+                      ? "bg-chatbot-primary text-white"
+                      : "bg-chatbot-surface text-chatbot-text border border-chatbot-border"
+                  )}
+                >
+                  <span className="message-text">
+                    {message.text}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* Typing Indicator */}
           {isTyping && showTypingIndicator && (

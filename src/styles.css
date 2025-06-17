@@ -58,6 +58,48 @@
   will-change: transform, opacity;
 }
 
+/* Split text animation styles */
+[data-chatbot-instance] .message-text {
+  font-kerning: none;
+  display: inline-block;
+}
+
+[data-chatbot-instance] .split-word {
+  display: inline-block;
+  margin-right: 0.15em;
+  position: relative;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Prevent text shifting during split animation */
+[data-chatbot-instance] .bot-message .message-text {
+  white-space: pre-wrap;
+  line-height: 1.4;
+}
+
+/* Hide bot messages initially - use class toggle instead of !important */
+[data-chatbot-instance] .bot-message.pre-animation .max-w-xs {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: none;
+}
+
+[data-chatbot-instance] .bot-message.pre-animation .message-text {
+  opacity: 0;
+}
+
+/* User messages should be visible immediately */
+[data-chatbot-instance] .user-message .max-w-xs {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+[data-chatbot-instance] .user-message .message-text {
+  opacity: 1;
+}
+
 /* Enhanced shadows and visual effects */
 .chatbot-shadow {
   box-shadow: 
