@@ -519,7 +519,8 @@ class MessageProcessingService {
   static async processMessage(
     message: string,
     agentUrl: string,
-    sessionId: string
+    sessionId: string,
+    systemMessage?: string
   ): Promise<string> {
     const controller = new AbortController();
     const timeoutId = setTimeout(
@@ -544,6 +545,7 @@ class MessageProcessingService {
         body: JSON.stringify({
           question: message,
           session: sessionId,
+          systemPrompt: systemMessage,
         }),
         signal: controller.signal,
       });
@@ -855,6 +857,7 @@ export const useChatbot = ({
       const agentUrl =
         state.apiKeyValidation.chatbotConfig?.agentUrl ||
         apiConnectionRef.current.endpoint;
+      const systemMessage = state.apiKeyValidation.chatbotConfig?.systemPrompt;
       const sessionId = SessionManagementService.getOrCreateSessionId();
 
       console.log("🔄 Using agent endpoint:", {
@@ -866,7 +869,8 @@ export const useChatbot = ({
       return MessageProcessingService.processMessage(
         message,
         agentUrl,
-        sessionId
+        sessionId,
+        systemMessage
       );
     },
     [apiKey, state.apiKeyValidation.chatbotConfig?.agentUrl]

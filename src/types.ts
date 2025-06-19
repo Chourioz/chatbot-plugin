@@ -23,6 +23,7 @@ export interface ServerChatbotConfig {
   placeholder?: string;
   agentUrl?: string;
   theme?: ChatbotTheme;
+  systemPrompt?: string;
 }
 
 export interface ChatbotConfig {
