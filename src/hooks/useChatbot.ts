@@ -763,12 +763,34 @@ export const useChatbot = ({
     initializeConnection();
   }, [initializeConnection]);
 
-  // Initialize welcome message
+  // Initialize welcome message - but prioritize API validation config
   useEffect(() => {
-    if (welcomeMessageRef.current && state.messages.length === 0) {
+    // Determine the effective welcome message to use
+    const apiWelcomeMessage =
+      state.apiKeyValidation.isValid &&
+      state.apiKeyValidation.chatbotConfig?.welcomeText;
+
+    const effectiveWelcomeMessage =
+      apiWelcomeMessage ||
+      welcomeMessageRef.current ||
+      welcomeMessage ||
+      "Hello! How can I help you today?";
+
+    // Always update welcomeMessageRef to the effective message
+    if (apiWelcomeMessage) {
+      welcomeMessageRef.current = apiWelcomeMessage;
+      console.log("🔄 Using welcome message from API validation:", {
+        apiMessage: apiWelcomeMessage,
+        source: "API chatbot configuration",
+      });
+    }
+
+    // Initialize or update welcome message in chat
+    if (state.messages.length === 0) {
+      // No messages yet - create initial welcome message
       const welcomeMsg: ChatMessage = {
         id: `welcome-${Date.now()}`,
-        text: welcomeMessageRef.current,
+        text: effectiveWelcomeMessage,
         sender: "bot",
         timestamp: new Date(),
       };
@@ -776,59 +798,41 @@ export const useChatbot = ({
         ...prev,
         messages: [welcomeMsg],
       }));
-    }
-  }, [welcomeMessageRef.current, state.messages.length]);
-
-  // Update welcome message when API validation provides chatbot config
-  useEffect(() => {
-    if (
-      state.apiKeyValidation.isValid &&
-      state.apiKeyValidation.chatbotConfig?.welcomeText
-    ) {
-      const newWelcomeMessage =
-        state.apiKeyValidation.chatbotConfig.welcomeText;
-      const currentWelcomeMessage = welcomeMessageRef.current;
-
-      // Only update if the message is actually different
-      if (currentWelcomeMessage !== newWelcomeMessage) {
-        console.log("🔄 Updating welcome message from API validation:", {
-          previous: currentWelcomeMessage,
-          new: newWelcomeMessage,
-          source: "API chatbot configuration",
+      console.log(
+        "💬 Initial welcome message created:",
+        effectiveWelcomeMessage.substring(0, 50) + "..."
+      );
+    } else {
+      // Check if we need to force update the first message when API validation arrives
+      const firstMessage = state.messages[0];
+      if (
+        apiWelcomeMessage &&
+        firstMessage.id.startsWith("welcome-") &&
+        firstMessage.sender === "bot" &&
+        firstMessage.text !== apiWelcomeMessage
+      ) {
+        setState((prev) => ({
+          ...prev,
+          messages: [
+            {
+              ...firstMessage,
+              text: apiWelcomeMessage,
+              timestamp: new Date(), // Update timestamp to show it's fresh
+            },
+            ...prev.messages.slice(1), // Keep the rest of the messages
+          ],
+        }));
+        console.log("💬 Welcome message FORCED update from API config:", {
+          old: firstMessage.text.substring(0, 30) + "...",
+          new: apiWelcomeMessage.substring(0, 30) + "...",
         });
-
-        // Update the welcome message reference
-        welcomeMessageRef.current = newWelcomeMessage;
-
-        // If there's already a welcome message in the chat, update it
-        if (state.messages.length > 0) {
-          const firstMessage = state.messages[0];
-          if (
-            firstMessage.id.startsWith("welcome-") &&
-            firstMessage.sender === "bot"
-          ) {
-            setState((prev) => ({
-              ...prev,
-              messages: [
-                {
-                  ...firstMessage,
-                  text: newWelcomeMessage,
-                  timestamp: new Date(), // Update timestamp to show it's fresh
-                },
-                ...prev.messages.slice(1), // Keep the rest of the messages
-              ],
-            }));
-            console.log(
-              "💬 Welcome message updated in chat history from API config"
-            );
-          }
-        }
       }
     }
   }, [
     state.apiKeyValidation.isValid,
     state.apiKeyValidation.chatbotConfig?.welcomeText,
     state.messages.length,
+    welcomeMessage, // Include initial prop for first load
   ]);
 
   // Message ID generator
