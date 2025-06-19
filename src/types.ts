@@ -17,6 +17,12 @@ export interface ChatbotTheme {
   font?: string;
 }
 
+export interface ServerChatbotConfig {
+  title?: string;
+  welcomeText?: string;
+  agentUrl?: string;
+}
+
 export interface ChatbotConfig {
   title?: string;
   welcomeMessage?: string;

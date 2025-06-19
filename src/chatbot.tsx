@@ -44,6 +44,8 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
     isTyping,
     sendMessage,
     apiKeyValidation,
+    updateWelcomeMessage,
+    getEffectiveWelcomeMessage,
   } = useChatbot({
     apiKey,
     onMessage,
@@ -76,6 +78,9 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
     controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
   const mergedTheme = { ...defaultTheme, ...theme };
 
+  // Dynamic configuration from API takes precedence over props
+  const effectiveTitle = apiKeyValidation.chatbotConfig?.title || title;
+
   // Debug: Log position changes
   useEffect(() => {
     console.log('🔄 Chatbot position changed to:', position);
@@ -88,10 +93,17 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
       if (apiKeyValidation.user) {
         console.log('👤 User:', apiKeyValidation.user.fullName, `(${apiKeyValidation.user.email})`);
       }
+      if (apiKeyValidation.chatbotConfig) {
+        console.log('⚙️ Chatbot Config:', {
+          title: apiKeyValidation.chatbotConfig.title,
+          welcomeText: apiKeyValidation.chatbotConfig.welcomeText,
+          agentUrl: apiKeyValidation.chatbotConfig.agentUrl
+        });
+      }
     } else if (apiKeyValidation.error) {
       console.warn('⚠️ API Key validation failed:', apiKeyValidation.error);
     }
-  }, [apiKeyValidation.isValid, apiKeyValidation.keyId, apiKeyValidation.error, apiKeyValidation.user]);
+  }, [apiKeyValidation.isValid, apiKeyValidation.keyId, apiKeyValidation.error, apiKeyValidation.user, apiKeyValidation.chatbotConfig]);
 
 
 
@@ -619,7 +631,7 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
       >
         {/* Header */}
         <div className="bg-chatbot-primary text-white p-4 rounded-t-lg flex justify-between items-center chat-header">
-          <h3 className="font-semibold">{title}</h3>
+                        <h3 className="font-semibold">{effectiveTitle}</h3>
           <button
             onClick={handleToggle}
             className="text-white hover:text-chatbot-accent transition-colors"

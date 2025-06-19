@@ -1,5 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import type { ChatMessage, MessageHandler } from "../types";
+import type {
+  ChatMessage,
+  MessageHandler,
+  ServerChatbotConfig,
+} from "../types";
 
 // Types for the hook
 interface ApiKeyValidation {
@@ -14,6 +18,7 @@ interface ApiKeyValidation {
   };
   lastUsed?: string;
   usageCount?: number;
+  chatbotConfig?: ServerChatbotConfig;
   error: string | null;
   isLoading?: boolean;
 }
@@ -51,6 +56,18 @@ interface UseChatbotReturn {
   clearMessages: () => void;
   clearError: () => void;
   validateApiKey: () => Promise<void>;
+  updateWelcomeMessage: (newWelcomeMessage: string) => void;
+
+  // Session Management
+  clearSession: () => void;
+  getSessionInfo: () => {
+    sessionId: string;
+    deviceFingerprint: string;
+    created: string;
+  };
+
+  // Getters
+  getEffectiveWelcomeMessage: () => string;
 
   // Validation
   apiKeyValidation: ApiKeyValidation;
@@ -69,6 +86,7 @@ interface ApiKeyValidationResponse {
   };
   lastUsed: string;
   usageCount: number;
+  chatbotConfig: ServerChatbotConfig;
 }
 
 interface ApiResponse {
@@ -204,9 +222,9 @@ class ApiConfigurationService {
     return this.config.chatEndpoint;
   }
 
-  static createConnection(apiKey: string): ApiConnection {
+  static createConnection(apiKey: string, agentUrl?: string): ApiConnection {
     return {
-      endpoint: this.getChatEndpoint(),
+      endpoint: agentUrl || this.getChatEndpoint(),
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
@@ -326,6 +344,7 @@ class ApiKeyValidationService {
         user: data.user,
         lastUsed: data.lastUsed,
         usageCount: data.usageCount,
+        chatbotConfig: data.chatbotConfig,
         error: null,
         isLoading: false,
       };
@@ -358,28 +377,176 @@ class ApiKeyValidationService {
   }
 }
 
-// Message Processing Service (Single Responsibility)
+// Session Management Service for Anonymous Users
+class SessionManagementService {
+  private static readonly SESSION_STORAGE_KEY = "react-chatbot-session";
+  private static readonly DEVICE_FINGERPRINT_KEY = "react-chatbot-device-fp";
+
+  // Generate device fingerprint based on browser characteristics
+  private static generateDeviceFingerprint(): string {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = 200;
+    canvas.height = 50;
+
+    if (ctx) {
+      ctx.textBaseline = "top";
+      ctx.font = "14px Arial";
+      ctx.fillText("Device fingerprint test 🔐", 2, 2);
+    }
+
+    const canvasFingerprint = canvas.toDataURL();
+
+    const deviceInfo = {
+      userAgent: navigator.userAgent,
+      language: navigator.language,
+      platform: navigator.platform,
+      screenResolution: `${screen.width}x${screen.height}`,
+      colorDepth: screen.colorDepth,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      cookieEnabled: navigator.cookieEnabled,
+      canvas: canvasFingerprint.slice(-50), // Last 50 chars to reduce size
+    };
+
+    // Create hash from device info
+    const deviceString = JSON.stringify(deviceInfo);
+    let hash = 0;
+    for (let i = 0; i < deviceString.length; i++) {
+      const char = deviceString.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+
+    return `df_${Math.abs(hash).toString(36)}_${Date.now().toString(36)}`;
+  }
+
+  // Generate unique session ID with device fingerprint + timestamp + random
+  private static generateSessionId(): string {
+    const deviceFp = this.getOrCreateDeviceFingerprint();
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substring(2, 8);
+    const browserType = this.getBrowserType();
+
+    return `${deviceFp}_${browserType}_${timestamp}_${random}`;
+  }
+
+  // Get browser type for additional entropy
+  private static getBrowserType(): string {
+    const userAgent = navigator.userAgent;
+    if (userAgent.includes("Chrome")) return "chr";
+    if (userAgent.includes("Firefox")) return "ffx";
+    if (userAgent.includes("Safari")) return "sfr";
+    if (userAgent.includes("Edge")) return "edg";
+    return "unk";
+  }
+
+  // Get or create device fingerprint (persists across browser sessions)
+  private static getOrCreateDeviceFingerprint(): string {
+    try {
+      let deviceFp = localStorage.getItem(this.DEVICE_FINGERPRINT_KEY);
+
+      if (!deviceFp) {
+        deviceFp = this.generateDeviceFingerprint();
+        localStorage.setItem(this.DEVICE_FINGERPRINT_KEY, deviceFp);
+        console.log(
+          "🔐 New device fingerprint created:",
+          deviceFp.substring(0, 20) + "..."
+        );
+      }
+
+      return deviceFp;
+    } catch (error) {
+      console.warn(
+        "⚠️ Could not access localStorage for device fingerprint:",
+        error
+      );
+      // Fallback to session-only fingerprint
+      return this.generateDeviceFingerprint();
+    }
+  }
+
+  // Get or create session ID (persists during chatbot instance)
+  static getOrCreateSessionId(): string {
+    try {
+      let sessionId = sessionStorage.getItem(this.SESSION_STORAGE_KEY);
+
+      if (!sessionId) {
+        sessionId = this.generateSessionId();
+        sessionStorage.setItem(this.SESSION_STORAGE_KEY, sessionId);
+        console.log("🆔 New session created:", {
+          sessionId: sessionId.substring(0, 30) + "...",
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      return sessionId;
+    } catch (error) {
+      console.warn(
+        "⚠️ Could not access sessionStorage, generating temporary session:",
+        error
+      );
+      // Fallback to in-memory session for current page load
+      return this.generateSessionId();
+    }
+  }
+
+  // Clear session (for logout or reset)
+  static clearSession(): void {
+    try {
+      sessionStorage.removeItem(this.SESSION_STORAGE_KEY);
+      console.log("🧹 Session cleared");
+    } catch (error) {
+      console.warn("⚠️ Could not clear session from storage:", error);
+    }
+  }
+
+  // Get session info for debugging
+  static getSessionInfo(): {
+    sessionId: string;
+    deviceFingerprint: string;
+    created: string;
+  } {
+    const sessionId = this.getOrCreateSessionId();
+    const deviceFp = this.getOrCreateDeviceFingerprint();
+
+    return {
+      sessionId: sessionId.substring(0, 30) + "...",
+      deviceFingerprint: deviceFp.substring(0, 20) + "...",
+      created: new Date().toISOString(),
+    };
+  }
+}
+
+// Message Processing Service (Updated for real agent communication)
 class MessageProcessingService {
   static async processMessage(
     message: string,
-    apiConnection: ApiConnection,
-    apiKey: string
+    agentUrl: string,
+    sessionId: string
   ): Promise<string> {
     const controller = new AbortController();
     const timeoutId = setTimeout(
       () => controller.abort(),
-      apiConnection.timeout
+      30000 // 30 second timeout
     );
 
     try {
-      const response = await fetch(apiConnection.endpoint, {
+      console.log("📤 Sending message to agent:", {
+        url: agentUrl,
+        sessionId: sessionId.substring(0, 20) + "...",
+        messageLength: message.length,
+      });
+
+      const response = await fetch(agentUrl, {
         method: "POST",
-        headers: apiConnection.headers,
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "User-Agent": "ReactChatbotComponent/1.0",
+        },
         body: JSON.stringify({
-          message,
-          timestamp: new Date().toISOString(),
-          keyId: apiKey.substring(3, 11), // Extract key identifier from sk_ prefix
-          platform: "react-chatbot-component",
+          question: message,
+          session: sessionId,
         }),
         signal: controller.signal,
       });
@@ -388,23 +555,52 @@ class MessageProcessingService {
 
       if (!response.ok) {
         throw new Error(
-          `API request failed: ${response.status} ${response.statusText}`
+          `Agent request failed: ${response.status} ${response.statusText}`
         );
       }
 
       const data = await response.json();
-      return data.response || data.message || "No response received from agent";
+
+      console.log("📥 Received response from agent:", {
+        responseLength: data?.output?.length || 0,
+        sessionId: sessionId.substring(0, 20) + "...",
+        responseStructure: Object.keys(data || {}),
+      });
+
+      // The agent response structure contains 'output' field with the actual response
+      if (data.output) {
+        return data.output;
+      }
+
+      // Fallback to other possible response field names for compatibility
+      const fallbackResponse =
+        data.answer || data.response || data.message || data.reply;
+
+      if (fallbackResponse) {
+        console.warn(
+          "⚠️ Agent response using fallback field instead of 'output':",
+          Object.keys(data)
+        );
+        return fallbackResponse;
+      }
+
+      // Log the full response structure for debugging
+      console.error("🚨 No valid response found in agent response:", data);
+      return "No response received from agent. Please check the agent configuration.";
     } catch (error) {
       clearTimeout(timeoutId);
 
       if (error instanceof Error) {
         if (error.name === "AbortError") {
-          throw new Error("Request timeout. Please try again.");
+          throw new Error(
+            "Request timeout. The agent took too long to respond. Please try again."
+          );
         }
-        throw error;
+        console.error("🚨 Agent communication error:", error);
+        throw new Error(`Failed to communicate with agent: ${error.message}`);
       }
       throw new Error(
-        "Failed to communicate with agent. Please check your API key and try again."
+        "Unknown error occurred while communicating with agent. Please try again."
       );
     }
   }
@@ -454,6 +650,7 @@ export const useChatbot = ({
   // Refs for stable references
   const apiConnectionRef = useRef<ApiConnection | null>(null);
   const messageIdCounterRef = useRef(0);
+  const welcomeMessageRef = useRef(welcomeMessage);
 
   // Validate API key function
   const validateApiKey = useCallback(async () => {
@@ -503,8 +700,11 @@ export const useChatbot = ({
   const initializeConnection = useCallback(() => {
     if (state.apiKeyValidation.isValid && apiKey) {
       try {
-        apiConnectionRef.current =
-          ApiConfigurationService.createConnection(apiKey);
+        const agentUrl = state.apiKeyValidation.chatbotConfig?.agentUrl;
+        apiConnectionRef.current = ApiConfigurationService.createConnection(
+          apiKey,
+          agentUrl
+        );
         setState((prev) => ({
           ...prev,
           isConnected: true,
@@ -514,6 +714,9 @@ export const useChatbot = ({
           "🔑 API connection established for client:",
           state.apiKeyValidation.keyId
         );
+        if (agentUrl) {
+          console.log("🌐 Using custom agent URL:", agentUrl);
+        }
       } catch (error) {
         ErrorHandlingService.logError("Connection initialization", error);
         setState((prev) => ({
@@ -535,6 +738,7 @@ export const useChatbot = ({
     state.apiKeyValidation.isValid,
     state.apiKeyValidation.keyId,
     state.apiKeyValidation.error,
+    state.apiKeyValidation.chatbotConfig?.agentUrl,
   ]);
 
   // Validate API key when it changes
@@ -561,10 +765,10 @@ export const useChatbot = ({
 
   // Initialize welcome message
   useEffect(() => {
-    if (welcomeMessage && state.messages.length === 0) {
+    if (welcomeMessageRef.current && state.messages.length === 0) {
       const welcomeMsg: ChatMessage = {
         id: `welcome-${Date.now()}`,
-        text: welcomeMessage,
+        text: welcomeMessageRef.current,
         sender: "bot",
         timestamp: new Date(),
       };
@@ -573,7 +777,59 @@ export const useChatbot = ({
         messages: [welcomeMsg],
       }));
     }
-  }, [welcomeMessage, state.messages.length]);
+  }, [welcomeMessageRef.current, state.messages.length]);
+
+  // Update welcome message when API validation provides chatbot config
+  useEffect(() => {
+    if (
+      state.apiKeyValidation.isValid &&
+      state.apiKeyValidation.chatbotConfig?.welcomeText
+    ) {
+      const newWelcomeMessage =
+        state.apiKeyValidation.chatbotConfig.welcomeText;
+      const currentWelcomeMessage = welcomeMessageRef.current;
+
+      // Only update if the message is actually different
+      if (currentWelcomeMessage !== newWelcomeMessage) {
+        console.log("🔄 Updating welcome message from API validation:", {
+          previous: currentWelcomeMessage,
+          new: newWelcomeMessage,
+          source: "API chatbot configuration",
+        });
+
+        // Update the welcome message reference
+        welcomeMessageRef.current = newWelcomeMessage;
+
+        // If there's already a welcome message in the chat, update it
+        if (state.messages.length > 0) {
+          const firstMessage = state.messages[0];
+          if (
+            firstMessage.id.startsWith("welcome-") &&
+            firstMessage.sender === "bot"
+          ) {
+            setState((prev) => ({
+              ...prev,
+              messages: [
+                {
+                  ...firstMessage,
+                  text: newWelcomeMessage,
+                  timestamp: new Date(), // Update timestamp to show it's fresh
+                },
+                ...prev.messages.slice(1), // Keep the rest of the messages
+              ],
+            }));
+            console.log(
+              "💬 Welcome message updated in chat history from API config"
+            );
+          }
+        }
+      }
+    }
+  }, [
+    state.apiKeyValidation.isValid,
+    state.apiKeyValidation.chatbotConfig?.welcomeText,
+    state.messages.length,
+  ]);
 
   // Message ID generator
   const generateMessageId = useCallback(
@@ -602,13 +858,25 @@ export const useChatbot = ({
         throw new Error("API connection not established");
       }
 
+      // Use agent URL from API validation if available, otherwise fallback to default endpoint
+      const agentUrl =
+        state.apiKeyValidation.chatbotConfig?.agentUrl ||
+        apiConnectionRef.current.endpoint;
+      const sessionId = SessionManagementService.getOrCreateSessionId();
+
+      console.log("🔄 Using agent endpoint:", {
+        isCustomAgent: !!state.apiKeyValidation.chatbotConfig?.agentUrl,
+        agentUrl: agentUrl.substring(0, 50) + "...",
+        sessionId: sessionId.substring(0, 20) + "...",
+      });
+
       return MessageProcessingService.processMessage(
         message,
-        apiConnectionRef.current,
-        apiKey
+        agentUrl,
+        sessionId
       );
     },
-    [apiKey]
+    [apiKey, state.apiKeyValidation.chatbotConfig?.agentUrl]
   );
 
   // Send message function (Open/Closed Principle - extensible via onMessage prop)
@@ -697,6 +965,48 @@ export const useChatbot = ({
     setState((prev) => ({ ...prev, error: null }));
   }, []);
 
+  // Update welcome message
+  const updateWelcomeMessage = useCallback((newWelcomeMessage: string) => {
+    // Update the welcome message reference
+    welcomeMessageRef.current = newWelcomeMessage;
+
+    // If there's already a welcome message in the chat, update it
+    setState((prev) => {
+      if (prev.messages.length > 0) {
+        const firstMessage = prev.messages[0];
+        if (
+          firstMessage.id.startsWith("welcome-") &&
+          firstMessage.sender === "bot"
+        ) {
+          return {
+            ...prev,
+            messages: [
+              {
+                ...firstMessage,
+                text: newWelcomeMessage,
+                timestamp: new Date(), // Update timestamp to show it's fresh
+              },
+              ...prev.messages.slice(1), // Keep the rest of the messages
+            ],
+          };
+        }
+      }
+      return prev;
+    });
+
+    console.log("💬 Welcome message manually updated:", newWelcomeMessage);
+  }, []);
+
+  // Get effective welcome message (API config takes precedence)
+  const getEffectiveWelcomeMessage = useCallback((): string => {
+    return (
+      state.apiKeyValidation.chatbotConfig?.welcomeText ||
+      welcomeMessageRef.current ||
+      welcomeMessage ||
+      "Hello! How can I help you today?"
+    );
+  }, [state.apiKeyValidation.chatbotConfig?.welcomeText, welcomeMessage]);
+
   return {
     // State
     messages: state.messages,
@@ -709,6 +1019,14 @@ export const useChatbot = ({
     clearMessages,
     clearError,
     validateApiKey,
+    updateWelcomeMessage,
+
+    // Session Management
+    clearSession: SessionManagementService.clearSession,
+    getSessionInfo: SessionManagementService.getSessionInfo,
+
+    // Getters
+    getEffectiveWelcomeMessage,
 
     // Validation
     apiKeyValidation: state.apiKeyValidation,

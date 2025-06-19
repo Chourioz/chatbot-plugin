@@ -242,11 +242,9 @@ const DemoApp: React.FC = () => {
       {/* Chatbot Component */}
       <ReactChatbot
         title="GSAP Demo Assistant"
-        welcomeMessage="¡Hola! 👋 Soy tu asistente con animaciones GSAP. ¿Has notado las transiciones fluidas? ¡Prueba a interactuar conmigo! 🚀"
         placeholder="Escribe 'hello', 'animation', 'gsap' o cualquier mensaje..."
         position={position}
         theme={theme}
-        onMessage={handleMessage}
         maxMessages={50}
         showTypingIndicator={true}
         className="demo-chatbot"

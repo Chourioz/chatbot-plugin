@@ -11,6 +11,7 @@ export type {
   ChatbotProps,
   MessageHandler,
   FloatingPosition,
+  ServerChatbotConfig,
 } from "./types";
 
 // Create custom element for direct HTML usage
