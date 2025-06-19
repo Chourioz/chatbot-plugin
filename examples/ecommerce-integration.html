@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Ecommerce Integration Examples</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .example {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .example h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #005a8b;
+        }
+        .config-display {
+            background: #eee;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛍️ Chatbot Ecommerce Integration Examples</h1>
+        <p>Live examples showing how to integrate the React Chatbot Component in different ecommerce scenarios.</p>
+
+        <!-- Example 1: Basic Integration -->
+        <div class="example">
+            <h3>1. Basic CDN Integration</h3>
+            <p>Simple integration using CDN - perfect for any ecommerce platform</p>
+            <button onclick="initBasicChatbot()">Load Basic Chatbot</button>
+            <div class="config-display" id="basic-config">
+                API Key: demo-key-12345<br>
+                Position: bottom-right<br>
+                Theme: Default blue
+            </div>
+        </div>
+
+        <!-- Example 2: Custom Theme -->
+        <div class="example">
+            <h3>2. Custom Branded Theme</h3>
+            <p>Chatbot with custom colors matching your brand</p>
+            <button onclick="initCustomThemeChatbot()">Load Custom Theme</button>
+            <div class="config-display" id="custom-config">
+                API Key: demo-key-67890<br>
+                Position: bottom-left<br>
+                Theme: Custom orange/purple brand colors
+            </div>
+        </div>
+
+        <!-- Example 3: Advanced Integration -->
+        <div class="example">
+            <h3>3. Advanced Integration with Context</h3>
+            <p>Integration with customer data and shopping context</p>
+            <button onclick="initAdvancedChatbot()">Load Advanced Chatbot</button>
+            <button onclick="simulateUserLogin()">Simulate User Login</button>
+            <button onclick="simulateCartUpdate()">Simulate Cart Update</button>
+            <div class="config-display" id="advanced-config">
+                Customer: Guest<br>
+                Cart Items: 0<br>
+                Total: $0.00
+            </div>
+        </div>
+
+        <!-- Example 4: Multiple Languages -->
+        <div class="example">
+            <h3>4. Multi-language Support</h3>
+            <p>Chatbot with different language configurations</p>
+            <button onclick="initChatbotLang('en')">English</button>
+            <button onclick="initChatbotLang('es')">Español</button>
+            <button onclick="initChatbotLang('fr')">Français</button>
+        </div>
+
+        <!-- Controls -->
+        <div class="example">
+            <h3>🎛️ Controls</h3>
+            <button onclick="removeAllChatbots()">Remove All Chatbots</button>
+            <button onclick="toggleChatbot()">Toggle Current Chatbot</button>
+            <button onclick="updateChatbotTheme()">Update Theme</button>
+        </div>
+    </div>
+
+    <!-- React Dependencies -->
+    <script src="https://unpkg.com/react@19/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js"></script>
+    
+    <!-- Our Chatbot Component -->
+    <script src="../dist/react-chatbot-component.umd.js"></script>
+
+    <script>
+        // Simulate ecommerce context
+        let customerData = {
+            id: null,
+            name: 'Guest',
+            email: '',
+            cart: {
+                items: [],
+                total: 0
+            }
+        };
+
+        let currentChatbot = null;
+
+        // Basic integration example
+        function initBasicChatbot() {
+            removeAllChatbots();
+            
+            const chatbot = document.createElement('react-chatbot');
+            chatbot.setAttribute('title', 'Support Chat');
+            chatbot.setAttribute('api-key', 'demo-key-12345');
+            chatbot.setAttribute('position', 'bottom-right');
+            chatbot.setAttribute('welcome-message', 'Hello! How can I help you today?');
+            
+            // Add message handler
+            chatbot.addEventListener('chatbot-message', handleBasicMessage);
+            
+            document.body.appendChild(chatbot);
+            currentChatbot = chatbot;
+        }
+
+        // Custom theme example
+        function initCustomThemeChatbot() {
+            removeAllChatbots();
+            
+            const chatbot = document.createElement('react-chatbot');
+            chatbot.setAttribute('title', 'Brand Support');
+            chatbot.setAttribute('api-key', 'demo-key-67890');
+            chatbot.setAttribute('position', 'bottom-left');
+            chatbot.setAttribute('theme', JSON.stringify({
+                primary: '#ff6b35',
+                secondary: '#004e89',
+                accent: '#ffa500',
+                background: '#ffffff',
+                surface: '#f8f9fa'
+            }));
+            chatbot.setAttribute('welcome-message', 'Welcome to our store! How can I assist you?');
+            
+            chatbot.addEventListener('chatbot-message', handleCustomMessage);
+            
+            document.body.appendChild(chatbot);
+            currentChatbot = chatbot;
+        }
+
+        // Advanced integration with context
+        function initAdvancedChatbot() {
+            removeAllChatbots();
+            
+            const chatbot = document.createElement('react-chatbot');
+            chatbot.setAttribute('title', 'Personal Shopping Assistant');
+            chatbot.setAttribute('api-key', 'demo-key-advanced');
+            chatbot.setAttribute('position', 'bottom-right');
+            chatbot.setAttribute('welcome-message', `Hello ${customerData.name}! I can help with your shopping.`);
+            
+            // Set custom message handler with context
+            chatbot.setMessageHandler(async (message, apiKey) => {
+                return await handleAdvancedMessage(message, apiKey, customerData);
+            });
+            
+            document.body.appendChild(chatbot);
+            currentChatbot = chatbot;
+        }
+
+        // Multi-language support
+        function initChatbotLang(lang) {
+            removeAllChatbots();
+            
+            const messages = {
+                en: {
+                    title: 'Support Chat',
+                    welcome: 'Hello! How can I help you today?',
+                    placeholder: 'Type your message...'
+                },
+                es: {
+                    title: 'Chat de Soporte',
+                    welcome: '¡Hola! ¿Cómo puedo ayudarte hoy?',
+                    placeholder: 'Escribe tu mensaje...'
+                },
+                fr: {
+                    title: 'Chat Support',
+                    welcome: 'Bonjour! Comment puis-je vous aider aujourd\'hui?',
+                    placeholder: 'Tapez votre message...'
+                }
+            };
+
+            const config = messages[lang] || messages.en;
+            
+            const chatbot = document.createElement('react-chatbot');
+            chatbot.setAttribute('title', config.title);
+            chatbot.setAttribute('api-key', `demo-key-${lang}`);
+            chatbot.setAttribute('position', 'bottom-right');
+            chatbot.setAttribute('welcome-message', config.welcome);
+            chatbot.setAttribute('placeholder', config.placeholder);
+            
+            chatbot.addEventListener('chatbot-message', (event) => {
+                handleLanguageMessage(event, lang);
+            });
+            
+            document.body.appendChild(chatbot);
+            currentChatbot = chatbot;
+        }
+
+        // Message Handlers
+        async function handleBasicMessage(event) {
+            const { message, apiKey } = event.detail;
+            console.log('Basic message received:', message, 'API Key:', apiKey);
+            
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // This would normally be handled by your backend
+            const responses = [
+                "Thank you for your message! How can I help you further?",
+                "I understand. Let me find that information for you.",
+                "Is there anything specific about our products you'd like to know?",
+                "I'm here to help with any questions about your order or our products."
+            ];
+            
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        async function handleCustomMessage(event) {
+            const { message, apiKey } = event.detail;
+            console.log('Custom themed message:', message);
+            
+            await new Promise(resolve => setTimeout(resolve, 800));
+            
+            return `Thanks for contacting our branded support! Your message "${message}" has been received. Our team will get back to you shortly.`;
+        }
+
+        async function handleAdvancedMessage(message, apiKey, context) {
+            console.log('Advanced message with context:', { message, apiKey, context });
+            
+            await new Promise(resolve => setTimeout(resolve, 1200));
+            
+            // Contextual responses based on customer data
+            if (message.toLowerCase().includes('order')) {
+                return context.id 
+                    ? `I can help you with your order history, ${context.name}. You have ${context.cart.items.length} items in your cart.`
+                    : "I'd be happy to help with orders! Please log in to see your order history.";
+            }
+            
+            if (message.toLowerCase().includes('cart')) {
+                return `Your current cart has ${context.cart.items.length} items totaling $${context.cart.total.toFixed(2)}. Would you like to review or modify your cart?`;
+            }
+            
+            return `Hi ${context.name}! I received your message about "${message}". How can I help you with your shopping today?`;
+        }
+
+        async function handleLanguageMessage(event, lang) {
+            const { message } = event.detail;
+            
+            const responses = {
+                en: `Thank you for your message: "${message}". How can I assist you further?`,
+                es: `Gracias por tu mensaje: "${message}". ¿Cómo puedo ayudarte más?`,
+                fr: `Merci pour votre message: "${message}". Comment puis-je vous aider davantage?`
+            };
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            return responses[lang] || responses.en;
+        }
+
+        // Utility functions
+        function removeAllChatbots() {
+            const chatbots = document.querySelectorAll('react-chatbot');
+            chatbots.forEach(chatbot => chatbot.remove());
+            currentChatbot = null;
+        }
+
+        function toggleChatbot() {
+            if (currentChatbot) {
+                // This would toggle the chatbot open/closed state
+                console.log('Toggling chatbot state');
+            }
+        }
+
+        function updateChatbotTheme() {
+            if (currentChatbot) {
+                currentChatbot.updateConfiguration({
+                    theme: {
+                        primary: '#' + Math.floor(Math.random()*16777215).toString(16),
+                        secondary: '#' + Math.floor(Math.random()*16777215).toString(16)
+                    }
+                });
+                console.log('Theme updated with random colors');
+            }
+        }
+
+        function simulateUserLogin() {
+            customerData = {
+                id: 12345,
+                name: 'John Doe',
+                email: 'john@example.com',
+                cart: {
+                    items: ['Product A', 'Product B'],
+                    total: 99.99
+                }
+            };
+            
+            document.getElementById('advanced-config').innerHTML = `
+                Customer: ${customerData.name} (${customerData.email})<br>
+                Cart Items: ${customerData.cart.items.length}<br>
+                Total: $${customerData.cart.total.toFixed(2)}
+            `;
+            
+            if (currentChatbot) {
+                currentChatbot.updateConfiguration({
+                    welcomeMessage: `Welcome back, ${customerData.name}! How can I help you today?`
+                });
+            }
+        }
+
+        function simulateCartUpdate() {
+            if (customerData.id) {
+                customerData.cart.items.push('New Product');
+                customerData.cart.total += 25.99;
+                
+                document.getElementById('advanced-config').innerHTML = `
+                    Customer: ${customerData.name} (${customerData.email})<br>
+                    Cart Items: ${customerData.cart.items.length}<br>
+                    Total: $${customerData.cart.total.toFixed(2)}
+                `;
+            }
+        }
+
+        // Initialize basic chatbot on page load
+        window.addEventListener('load', () => {
+            console.log('Page loaded. You can now test different chatbot integrations.');
+        });
+    </script>
+</body>
+</html> 
