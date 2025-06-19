@@ -12,33 +12,6 @@ const DemoApp: React.FC = () => {
 
   const [position, setPosition] = useState<"bottom-right" | "bottom-left" | "top-right" | "top-left">("bottom-right");
 
-  // Simulate API response with delay
-  const handleMessage = async (message: string): Promise<string> => {
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000));
-
-    // Enhanced responses based on message content
-    const responses = {
-      hello: "¡Hola! 👋 Soy tu asistente con animaciones GSAP. ¿En qué puedo ayudarte?",
-      animation: "¡Las animaciones GSAP son increíbles! 🎨 Ofrecen transiciones fluidas y profesionales.",
-      gsap: "GSAP (GreenSock Animation Platform) es la librería de animación más potente para web. ✨",
-      test: "¡Perfecto! Las animaciones están funcionando correctamente. 🚀",
-      smooth: "¿Has notado lo suaves que son las transiciones? Eso es el poder de GSAP. 💫",
-      icon: "Los iconos del botón flotante ahora tienen transiciones fluidas con rotación y escala. 🔄",
-      chat: "La ventana del chat se abre con una animación back.out que se siente muy natural. 📱",
-      message: "Cada mensaje aparece con una animación única desde diferentes direcciones. 💬",
-      button: "El botón flotante tiene efectos de hover, pulse y feedback táctil mejorados. 🎯",
-      default: "Mensaje recibido. Las animaciones GSAP hacen que todo se sienta más fluido y profesional. ✨"
-    };
-
-    const lowerMessage = message.toLowerCase();
-    const responseKey = Object.keys(responses).find(key => 
-      lowerMessage.includes(key)
-    ) as keyof typeof responses;
-
-    return responses[responseKey] || responses.default;
-  };
-
   const themePresets = [
     { name: "Azul Clásico", primary: "#3b82f6", secondary: "#1e40af", accent: "#60a5fa" },
     { name: "Verde Esmeralda", primary: "#10b981", secondary: "#047857", accent: "#34d399" },
@@ -241,12 +214,7 @@ const DemoApp: React.FC = () => {
 
       {/* Chatbot Component */}
       <ReactChatbot
-        title="GSAP Demo Assistant"
-        placeholder="Escribe 'hello', 'animation', 'gsap' o cualquier mensaje..."
         position={position}
-        theme={theme}
-        maxMessages={50}
-        showTypingIndicator={true}
         className="demo-chatbot"
         apiKey="sk_b151d0cef082828f860a4b9ba5c1b7f253548a8a196b2539bd3b8086318b431d"
       />

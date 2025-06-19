@@ -21,45 +21,25 @@ const defaultTheme: ChatbotTheme = {
 };
 
 export const ReactChatbot: React.FC<ChatbotProps> = ({
-  title = "Chat Assistant",
-  welcomeMessage = "Hello! How can I help you today?",
-  placeholder = "Type your message...",
-  position = "bottom-right",
-  theme = {},
   apiKey,
-  onMessage,
-  maxMessages = 100,
-  showTypingIndicator = true,
-  enableSound: _enableSound = false,
-  isOpen: controlledIsOpen,
-  onToggle,
+  position = "bottom-right",
   className,
 }) => {
   // Local state for UI
   const [internalIsOpen, setInternalIsOpen] = useState(false);
-  
+
   // Use custom hook for all business logic
-  const {
-    messages,
-    isTyping,
-    sendMessage,
-    apiKeyValidation,
-    updateWelcomeMessage,
-    getEffectiveWelcomeMessage,
-  } = useChatbot({
+  const { messages, isTyping, sendMessage, apiKeyValidation } = useChatbot({
     apiKey,
-    onMessage,
-    maxMessages,
-    welcomeMessage,
   });
 
   // Debug: Log messages changes
   useEffect(() => {
-    console.log('💬 Messages updated:', messages);
-    console.log('📊 Total messages:', messages.length);
+    console.log("💬 Messages updated:", messages);
+    console.log("📊 Total messages:", messages.length);
     const lastMessage = messages[messages.length - 1];
     if (lastMessage) {
-      console.log('📧 Last message:', lastMessage);
+      console.log("📧 Last message:", lastMessage);
     }
   }, [messages]);
 
@@ -74,38 +54,52 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
 
   const typingIndicatorRef = useRef<HTMLDivElement>(null);
 
-  const isOpen =
-    controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
-  const mergedTheme = { ...defaultTheme, ...theme };
+  const isOpen = internalIsOpen;
 
-  // Dynamic configuration from API takes precedence over props
-  const effectiveTitle = apiKeyValidation.chatbotConfig?.title || title;
+  // Get configuration from API key validation or use defaults
+  const config = apiKeyValidation.chatbotConfig;
+  const title = config?.title || "Chat Assistant";
+  const welcomeMessage =
+    config?.welcomeText || "Hello! How can I help you today?";
+  const placeholder = config?.placeholder || "Type your message...";
+  const theme = config?.theme
+    ? { ...defaultTheme, ...config.theme }
+    : defaultTheme;
 
   // Debug: Log position changes
   useEffect(() => {
-    console.log('🔄 Chatbot position changed to:', position);
+    console.log("🔄 Chatbot position changed to:", position);
   }, [position]);
 
   // Log API Key validation status
   useEffect(() => {
     if (apiKeyValidation.isValid) {
-      console.log('🔑 API Key validated for client:', apiKeyValidation.keyId);
+      console.log("🔑 API Key validated for client:", apiKeyValidation.keyId);
       if (apiKeyValidation.user) {
-        console.log('👤 User:', apiKeyValidation.user.fullName, `(${apiKeyValidation.user.email})`);
+        console.log(
+          "👤 User:",
+          apiKeyValidation.user.fullName,
+          `(${apiKeyValidation.user.email})`
+        );
       }
       if (apiKeyValidation.chatbotConfig) {
-        console.log('⚙️ Chatbot Config:', {
+        console.log("⚙️ Chatbot Config:", {
           title: apiKeyValidation.chatbotConfig.title,
           welcomeText: apiKeyValidation.chatbotConfig.welcomeText,
-          agentUrl: apiKeyValidation.chatbotConfig.agentUrl
+          agentUrl: apiKeyValidation.chatbotConfig.agentUrl,
+          theme: apiKeyValidation.chatbotConfig.theme || {},
         });
       }
     } else if (apiKeyValidation.error) {
-      console.warn('⚠️ API Key validation failed:', apiKeyValidation.error);
+      console.warn("⚠️ API Key validation failed:", apiKeyValidation.error);
     }
-  }, [apiKeyValidation.isValid, apiKeyValidation.keyId, apiKeyValidation.error, apiKeyValidation.user, apiKeyValidation.chatbotConfig]);
-
-
+  }, [
+    apiKeyValidation.isValid,
+    apiKeyValidation.keyId,
+    apiKeyValidation.error,
+    apiKeyValidation.user,
+    apiKeyValidation.chatbotConfig,
+  ]);
 
   // GSAP animations setup
   const { contextSafe } = useGSAP(
@@ -114,15 +108,15 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
       if (chatInterfaceRef.current) {
         const isBottom = position.includes("bottom");
         const isRight = position.includes("right");
-        
+
         gsap.set(chatInterfaceRef.current, {
           scale: 0,
           opacity: 0,
           y: isBottom ? 50 : -50,
-          transformOrigin: isBottom 
+          transformOrigin: isBottom
             ? `bottom ${isRight ? "right" : "left"}`
             : `top ${isRight ? "right" : "left"}`,
-          visibility: "hidden"
+          visibility: "hidden",
         });
       }
 
@@ -132,14 +126,14 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
           scale: 1,
           rotation: 0,
         });
-        
+
         // Subtle floating animation
         gsap.to(floatingButtonRef.current, {
           y: -2,
           duration: 2,
           ease: "sine.inOut",
           yoyo: true,
-          repeat: -1
+          repeat: -1,
         });
       }
 
@@ -148,12 +142,12 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
         gsap.set(closeIconRef.current, {
           scale: 0,
           rotation: 180,
-          opacity: 0
+          opacity: 0,
         });
         gsap.set(chatIconRef.current, {
           scale: 1,
           rotation: 0,
-          opacity: 1
+          opacity: 1,
         });
       }
 
@@ -161,26 +155,29 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
       if (typingIndicatorRef.current) {
         const dots = typingIndicatorRef.current.querySelectorAll(".typing-dot");
         if (dots.length > 0) {
-          gsap.set(dots, { 
+          gsap.set(dots, {
             scale: 0.8,
-            opacity: 0.3 
+            opacity: 0.3,
           });
-          
+
           const tl = gsap.timeline({ repeat: -1 });
           tl.to(dots, {
             scale: 1.2,
             opacity: 1,
             duration: 0.4,
             ease: "back.out(1.7)",
-            stagger: 0.15
-          })
-          .to(dots, {
-            scale: 0.8,
-            opacity: 0.3,
-            duration: 0.4,
-            ease: "back.in(1.7)",
-            stagger: 0.15
-          }, "-=0.2");
+            stagger: 0.15,
+          }).to(
+            dots,
+            {
+              scale: 0.8,
+              opacity: 0.3,
+              duration: 0.4,
+              ease: "back.in(1.7)",
+              stagger: 0.15,
+            },
+            "-=0.2"
+          );
         }
       }
     },
@@ -189,54 +186,63 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
 
   // Function to animate bot messages with split text effect
   const animateBotMessage = contextSafe((messageElement: HTMLElement) => {
-    console.log('🎬 Starting SplitText animation for bot message');
-    
+    console.log("🎬 Starting SplitText animation for bot message");
+
     // Only animate bot messages
-    if (!messageElement.classList.contains('bot-message')) {
+    if (!messageElement.classList.contains("bot-message")) {
       return;
     }
-    
-    const messageContainer = messageElement.querySelector('.max-w-xs');
-    const textContainer = messageElement.querySelector('.message-text');
-    
+
+    const messageContainer = messageElement.querySelector(".max-w-xs");
+    const textContainer = messageElement.querySelector(".message-text");
+
     if (!textContainer || !messageContainer) {
-      console.log('❌ Required elements not found');
+      console.log("❌ Required elements not found");
       return;
     }
 
     const textContent = textContainer.textContent?.substring(0, 30) + "...";
-    console.log('📝 Animating text:', textContent);
+    console.log("📝 Animating text:", textContent);
 
     // Remove the pre-animation class to allow GSAP control
-    messageElement.classList.remove('pre-animation');
-    console.log('🔓 Removed pre-animation class for GSAP control');
+    messageElement.classList.remove("pre-animation");
+    console.log("🔓 Removed pre-animation class for GSAP control");
 
     // Check current visibility state after class removal
     const containerOpacity = window.getComputedStyle(messageContainer).opacity;
     const textOpacity = window.getComputedStyle(textContainer).opacity;
-    console.log('📊 Opacity after class removal - Container:', containerOpacity, 'Text:', textOpacity);
+    console.log(
+      "📊 Opacity after class removal - Container:",
+      containerOpacity,
+      "Text:",
+      textOpacity
+    );
 
     // Initialize SplitType to split text into words
     const split = new SplitType(textContainer as HTMLElement, {
-      types: 'words',
-      wordClass: 'split-word'
+      types: "words",
+      wordClass: "split-word",
     });
 
     if (!split.words || split.words.length === 0) {
-      console.log('❌ SplitType failed to create words');
+      console.log("❌ SplitType failed to create words");
       // Restore visibility if split failed
       gsap.set(messageContainer, { opacity: 1 });
       gsap.set(textContainer, { opacity: 1 });
       return;
     }
 
-    console.log('✨ Animating', split.words.length, 'words with stagger effect');
+    console.log(
+      "✨ Animating",
+      split.words.length,
+      "words with stagger effect"
+    );
 
     // Set initial state for words
     gsap.set(split.words, {
       opacity: 0,
       y: 15,
-      scale: 0.9
+      scale: 0.9,
     });
 
     // Set initial state for containers
@@ -244,9 +250,9 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
     gsap.set(textContainer, { opacity: 1 }); // Text container visible, but words are hidden
 
     // Animate the message container entrance first
-    gsap.to(messageContainer, { 
-      y: 0, 
-      opacity: 1, 
+    gsap.to(messageContainer, {
+      y: 0,
+      opacity: 1,
       duration: 0.3,
       ease: "power2.out",
       onComplete: () => {
@@ -259,15 +265,15 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
           ease: "back.out(1.7)",
           stagger: {
             amount: 0.6,
-            from: "start"
+            from: "start",
           },
           onComplete: () => {
-            console.log('✅ SplitText animation completed');
+            console.log("✅ SplitText animation completed");
             // Clean up split after animation completes
             split.revert();
-          }
+          },
         });
-      }
+      },
     });
   });
 
@@ -279,98 +285,128 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
       if (isOpen) {
         // Show and animate in
         gsap.set(chatInterfaceRef.current, { visibility: "visible" });
-        
+
         // Ensure all child elements are immediately visible
-        const headerEl = chatInterfaceRef.current.querySelector('.chat-header');
-        const messagesEl = chatInterfaceRef.current.querySelector('.chat-messages');
-        const inputEl = chatInterfaceRef.current.querySelector('.chat-input-container');
-        
+        const headerEl = chatInterfaceRef.current.querySelector(".chat-header");
+        const messagesEl =
+          chatInterfaceRef.current.querySelector(".chat-messages");
+        const inputEl = chatInterfaceRef.current.querySelector(
+          ".chat-input-container"
+        );
+
         if (headerEl) gsap.set(headerEl, { opacity: 1, y: 0 });
         if (messagesEl) gsap.set(messagesEl, { opacity: 1, y: 0 });
         if (inputEl) gsap.set(inputEl, { opacity: 1, y: 0 });
-        
+
         const tl = gsap.timeline();
         tl.to(chatInterfaceRef.current, {
           scale: 1,
           opacity: 1,
           y: 0,
           duration: 0.6,
-          ease: "back.out(1.7)"
+          ease: "back.out(1.7)",
         });
-        
+
         // Animate individual elements if they exist
         if (headerEl) {
-          tl.from(headerEl, {
-            y: -20,
-            opacity: 0,
-            duration: 0.3,
-            ease: "power2.out"
-          }, "-=0.3");
+          tl.from(
+            headerEl,
+            {
+              y: -20,
+              opacity: 0,
+              duration: 0.3,
+              ease: "power2.out",
+            },
+            "-=0.3"
+          );
         }
-        
+
         if (messagesEl) {
-          tl.from(messagesEl, {
-            y: 20,
-            opacity: 0,
-            duration: 0.3,
-            ease: "power2.out"
-          }, "-=0.2");
+          tl.from(
+            messagesEl,
+            {
+              y: 20,
+              opacity: 0,
+              duration: 0.3,
+              ease: "power2.out",
+            },
+            "-=0.2"
+          );
         }
-        
+
         if (inputEl) {
-          tl.from(inputEl, {
-            y: 20,
-            opacity: 0,
-            duration: 0.3,
-            ease: "power2.out"
-          }, "-=0.2");
+          tl.from(
+            inputEl,
+            {
+              y: 20,
+              opacity: 0,
+              duration: 0.3,
+              ease: "power2.out",
+            },
+            "-=0.2"
+          );
         }
       } else {
         // Animate out then hide
-        const headerEl = chatInterfaceRef.current.querySelector('.chat-header');
-        const messagesEl = chatInterfaceRef.current.querySelector('.chat-messages');
-        const inputEl = chatInterfaceRef.current.querySelector('.chat-input-container');
-        
+        const headerEl = chatInterfaceRef.current.querySelector(".chat-header");
+        const messagesEl =
+          chatInterfaceRef.current.querySelector(".chat-messages");
+        const inputEl = chatInterfaceRef.current.querySelector(
+          ".chat-input-container"
+        );
+
         const tl = gsap.timeline({
           onComplete: () => {
             gsap.set(chatInterfaceRef.current, { visibility: "hidden" });
-          }
+          },
         });
-        
+
         if (inputEl) {
           tl.to(inputEl, {
             y: 20,
             opacity: 0,
             duration: 0.2,
-            ease: "power2.in"
+            ease: "power2.in",
           });
         }
-        
+
         if (messagesEl) {
-          tl.to(messagesEl, {
-            y: 20,
-            opacity: 0,
-            duration: 0.2,
-            ease: "power2.in"
-          }, "-=0.1");
+          tl.to(
+            messagesEl,
+            {
+              y: 20,
+              opacity: 0,
+              duration: 0.2,
+              ease: "power2.in",
+            },
+            "-=0.1"
+          );
         }
-        
+
         if (headerEl) {
-          tl.to(headerEl, {
-            y: -20,
-            opacity: 0,
-            duration: 0.2,
-            ease: "power2.in"
-          }, "-=0.1");
+          tl.to(
+            headerEl,
+            {
+              y: -20,
+              opacity: 0,
+              duration: 0.2,
+              ease: "power2.in",
+            },
+            "-=0.1"
+          );
         }
-        
-        tl.to(chatInterfaceRef.current, {
-          scale: 0,
-          opacity: 0,
-          y: position.includes("bottom") ? 50 : -50,
-          duration: 0.4,
-          ease: "back.in(1.7)"
-        }, "-=0.2");
+
+        tl.to(
+          chatInterfaceRef.current,
+          {
+            scale: 0,
+            opacity: 0,
+            y: position.includes("bottom") ? 50 : -50,
+            duration: 0.4,
+            ease: "back.in(1.7)",
+          },
+          "-=0.2"
+        );
       }
     },
     { dependencies: [isOpen], scope: containerRef }
@@ -390,15 +426,18 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
           rotation: -180,
           opacity: 0,
           duration: 0.3,
-          ease: "back.in(1.7)"
-        })
-        .to(closeIconRef.current, {
-          scale: 1,
-          rotation: 0,
-          opacity: 1,
-          duration: 0.3,
-          ease: "back.out(1.7)"
-        }, "-=0.1");
+          ease: "back.in(1.7)",
+        }).to(
+          closeIconRef.current,
+          {
+            scale: 1,
+            rotation: 0,
+            opacity: 1,
+            duration: 0.3,
+            ease: "back.out(1.7)",
+          },
+          "-=0.1"
+        );
       } else {
         // Transition to chat icon
         tl.to(closeIconRef.current, {
@@ -406,15 +445,18 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
           rotation: 180,
           opacity: 0,
           duration: 0.3,
-          ease: "back.in(1.7)"
-        })
-        .to(chatIconRef.current, {
-          scale: 1,
-          rotation: 0,
-          opacity: 1,
-          duration: 0.3,
-          ease: "back.out(1.7)"
-        }, "-=0.1");
+          ease: "back.in(1.7)",
+        }).to(
+          chatIconRef.current,
+          {
+            scale: 1,
+            rotation: 0,
+            opacity: 1,
+            duration: 0.3,
+            ease: "back.out(1.7)",
+          },
+          "-=0.1"
+        );
       }
     },
     { dependencies: [isOpen], scope: containerRef }
@@ -423,38 +465,42 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
   // Enhanced new message animation - using different approach
   useEffect(() => {
     if (messages.length === 0) return;
-    
-    console.log('🔄 New message effect triggered');
-    console.log('📊 Messages count:', messages.length);
-    
+
+    console.log("🔄 New message effect triggered");
+    console.log("📊 Messages count:", messages.length);
+
     // Use a small delay to ensure DOM is updated
     const timer = setTimeout(() => {
       if (!messagesContainerRef.current) {
-        console.log('❌ Messages container ref not available');
+        console.log("❌ Messages container ref not available");
         return;
       }
 
-      const allMessageElements = messagesContainerRef.current.querySelectorAll('.message-bubble');
-      console.log('🔍 Found total message elements:', allMessageElements.length);
-      
+      const allMessageElements =
+        messagesContainerRef.current.querySelectorAll(".message-bubble");
+      console.log(
+        "🔍 Found total message elements:",
+        allMessageElements.length
+      );
+
       if (allMessageElements.length > 0) {
         const lastMessage = allMessageElements[allMessageElements.length - 1];
-        const isUserMessage = lastMessage.classList.contains('user-message');
-        
-        console.log('📨 Last message element:', lastMessage);
-        console.log('👤 Is user message:', isUserMessage);
-        console.log('🤖 Is bot message:', !isUserMessage);
-        console.log('📝 Message classes:', lastMessage.className);
-        
+        const isUserMessage = lastMessage.classList.contains("user-message");
+
+        console.log("📨 Last message element:", lastMessage);
+        console.log("👤 Is user message:", isUserMessage);
+        console.log("🤖 Is bot message:", !isUserMessage);
+        console.log("📝 Message classes:", lastMessage.className);
+
         // Check if this message was already animated
-        if (lastMessage.getAttribute('data-animated') === 'true') {
-          console.log('⏭️ Message already animated, skipping');
+        if (lastMessage.getAttribute("data-animated") === "true") {
+          console.log("⏭️ Message already animated, skipping");
           return;
         }
-        
+
         // Mark as animated
-        lastMessage.setAttribute('data-animated', 'true');
-        
+        lastMessage.setAttribute("data-animated", "true");
+
         // Different animations for user vs bot messages
         if (isUserMessage) {
           // User messages get the standard entrance animation
@@ -464,7 +510,7 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
               opacity: 0,
               y: 30,
               scale: 0.8,
-              x: 20
+              x: 20,
             },
             {
               opacity: 1,
@@ -474,26 +520,26 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
               duration: 0.5,
               ease: "back.out(1.7)",
               onStart: () => {
-                console.log('🚀 User message entrance animation started');
-              }
+                console.log("🚀 User message entrance animation started");
+              },
             }
           );
         } else {
           // Bot messages get minimal entrance animation (the bubble will handle its own animation)
-          console.log('🤖 Setting up bot message for SplitText animation');
+          console.log("🤖 Setting up bot message for SplitText animation");
           gsap.set(lastMessage, { opacity: 1 }); // Make the message bubble visible immediately
-          
+
           // Add a small delay to ensure CSS has been applied and DOM is stable
           gsap.delayedCall(0.05, () => {
-            console.log('⏰ Starting SplitText animation after micro-delay');
+            console.log("⏰ Starting SplitText animation after micro-delay");
             animateBotMessage(lastMessage as HTMLElement);
           });
         }
       } else {
-        console.log('❌ No message elements found');
+        console.log("❌ No message elements found");
       }
     }, 50); // Small delay to ensure DOM is updated
-    
+
     return () => clearTimeout(timer);
   }, [messages, animateBotMessage]);
 
@@ -501,7 +547,7 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
   useEffect(() => {
     const chatbotElement = containerRef.current;
     if (chatbotElement) {
-      Object.entries(mergedTheme).forEach(([key, value]) => {
+      Object.entries(theme).forEach(([key, value]) => {
         if (value) {
           chatbotElement.style.setProperty(
             `--chatbot-${key.replace(/([A-Z])/g, "-$1").toLowerCase()}`,
@@ -510,33 +556,37 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
         }
       });
     }
-  }, [mergedTheme]);
-
-  // Welcome message is now handled by the useChatbot hook
+  }, [theme]);
 
   // Fallback to ensure elements are visible if animations fail
   useEffect(() => {
     if (isOpen && chatInterfaceRef.current) {
       // Delay to allow GSAP animations to run first
       const timer = setTimeout(() => {
-        const headerEl = chatInterfaceRef.current?.querySelector('.chat-header') as HTMLElement;
-        const messagesEl = chatInterfaceRef.current?.querySelector('.chat-messages') as HTMLElement;
-        const inputEl = chatInterfaceRef.current?.querySelector('.chat-input-container') as HTMLElement;
-        
-        if (headerEl && getComputedStyle(headerEl).opacity === '0') {
-          headerEl.style.opacity = '1';
-          headerEl.style.transform = 'translateY(0)';
+        const headerEl = chatInterfaceRef.current?.querySelector(
+          ".chat-header"
+        ) as HTMLElement;
+        const messagesEl = chatInterfaceRef.current?.querySelector(
+          ".chat-messages"
+        ) as HTMLElement;
+        const inputEl = chatInterfaceRef.current?.querySelector(
+          ".chat-input-container"
+        ) as HTMLElement;
+
+        if (headerEl && getComputedStyle(headerEl).opacity === "0") {
+          headerEl.style.opacity = "1";
+          headerEl.style.transform = "translateY(0)";
         }
-        if (messagesEl && getComputedStyle(messagesEl).opacity === '0') {
-          messagesEl.style.opacity = '1';
-          messagesEl.style.transform = 'translateY(0)';
+        if (messagesEl && getComputedStyle(messagesEl).opacity === "0") {
+          messagesEl.style.opacity = "1";
+          messagesEl.style.transform = "translateY(0)";
         }
-        if (inputEl && getComputedStyle(inputEl).opacity === '0') {
-          inputEl.style.opacity = '1';
-          inputEl.style.transform = 'translateY(0)';
+        if (inputEl && getComputedStyle(inputEl).opacity === "0") {
+          inputEl.style.opacity = "1";
+          inputEl.style.transform = "translateY(0)";
         }
       }, 700); // Wait for animations to complete
-      
+
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
@@ -552,8 +602,6 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
     }
   }, [messages]);
 
-
-
   const handleToggle = useCallback(() => {
     const newIsOpen = !isOpen;
 
@@ -567,25 +615,25 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
           gsap.to(floatingButtonRef.current, {
             scale: 1,
             duration: 0.4,
-            ease: "elastic.out(1, 0.5)"
+            ease: "elastic.out(1, 0.5)",
           });
-        }
+        },
       });
     }
 
-    if (controlledIsOpen === undefined) {
-      setInternalIsOpen(newIsOpen);
-    }
-    onToggle?.(newIsOpen);
-  }, [isOpen, controlledIsOpen, onToggle]);
+    setInternalIsOpen(newIsOpen);
+  }, [isOpen]);
 
   // Simplified message handler for the new ChatInput component
-  const handleSendMessage = useCallback(async (text: string) => {
-    if (!text.trim()) return;
+  const handleSendMessage = useCallback(
+    async (text: string) => {
+      if (!text.trim()) return;
 
-    // Use the hook's sendMessage function which handles all business logic
-    await sendMessage(text.trim());
-  }, [sendMessage]);
+      // Use the hook's sendMessage function which handles all business logic
+      await sendMessage(text.trim());
+    },
+    [sendMessage]
+  );
 
   // Enhanced hover animations
   const handleButtonHover = contextSafe(() => {
@@ -615,13 +663,31 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
     "top-left": "position-top-left",
   };
 
+  // Don't render if API key is not valid
+  if (!apiKeyValidation.isValid && apiKeyValidation.error) {
+    return (
+      <div className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        <strong>Chatbot Error:</strong> {apiKeyValidation.error}
+      </div>
+    );
+  }
+
+  // Show loading state while validating API key
+  if (!apiKeyValidation.isValid && !apiKeyValidation.error) {
+    return (
+      <div className="fixed bottom-4 right-4 bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">
+        <strong>Loading chatbot...</strong>
+      </div>
+    );
+  }
+
   return (
     <div
       ref={containerRef}
       className={clsx(positionClasses[position], className)}
       data-chatbot-instance=""
       style={{
-        fontFamily: mergedTheme.font,
+        fontFamily: theme.font,
       }}
     >
       {/* Chat Interface - Always rendered but hidden */}
@@ -631,7 +697,7 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
       >
         {/* Header */}
         <div className="bg-chatbot-primary text-white p-4 rounded-t-lg flex justify-between items-center chat-header">
-                        <h3 className="font-semibold">{effectiveTitle}</h3>
+          <h3 className="font-semibold">{title}</h3>
           <button
             onClick={handleToggle}
             className="text-white hover:text-chatbot-accent transition-colors"
@@ -663,16 +729,18 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
             if (message.sender === "bot") {
               console.log(`🤖 Rendering bot message ${index}:`, {
                 id: message.id,
-                text: message.text.substring(0, 50) + "..."
+                text: message.text.substring(0, 50) + "...",
               });
             }
-            
+
             return (
               <div
                 key={message.id}
                 className={clsx(
                   "flex message-bubble",
-                  message.sender === "user" ? "justify-end user-message" : "justify-start bot-message",
+                  message.sender === "user"
+                    ? "justify-end user-message"
+                    : "justify-start bot-message",
                   // Add pre-animation class to bot messages
                   message.sender === "bot" && "pre-animation"
                 )}
@@ -685,16 +753,14 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
                       : "bg-chatbot-surface text-chatbot-text border border-chatbot-border"
                   )}
                 >
-                  <span className="message-text">
-                    {message.text}
-                  </span>
+                  <span className="message-text">{message.text}</span>
                 </div>
               </div>
             );
           })}
 
           {/* Typing Indicator */}
-          {isTyping && showTypingIndicator && (
+          {isTyping && (
             <div className="flex justify-start">
               <div
                 ref={typingIndicatorRef}
@@ -743,7 +809,7 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
             d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
           />
         </svg>
-        
+
         {/* Close Icon */}
         <svg
           ref={closeIconRef}

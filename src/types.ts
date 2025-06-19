@@ -20,7 +20,9 @@ export interface ChatbotTheme {
 export interface ServerChatbotConfig {
   title?: string;
   welcomeText?: string;
+  placeholder?: string;
   agentUrl?: string;
+  theme?: ChatbotTheme;
 }
 
 export interface ChatbotConfig {
@@ -31,14 +33,12 @@ export interface ChatbotConfig {
   theme?: ChatbotTheme;
   apiKey?: string;
   onMessage?: (message: string, apiKey?: string) => Promise<string>;
-  maxMessages?: number;
-  showTypingIndicator?: boolean;
   enableSound?: boolean;
 }
 
-export interface ChatbotProps extends ChatbotConfig {
-  isOpen?: boolean;
-  onToggle?: (isOpen: boolean) => void;
+export interface ChatbotProps {
+  apiKey: string;
+  position?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
   className?: string;
 }
 

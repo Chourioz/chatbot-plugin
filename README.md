@@ -49,11 +49,7 @@ function App() {
   return (
     <div>
       {/* Your React content */}
-      <react-chatbot
-        api-key="your-api-key-here"
-        title="Support Chat"
-        position="bottom-right"
-      />
+      <react-chatbot api-key="your-api-key-here" position="bottom-right" />
     </div>
   );
 }
@@ -67,7 +63,6 @@ function App() {
     <!-- Your Vue app content -->
     <react-chatbot
       api-key="your-api-key-here"
-      title="Support Chat"
       position="bottom-right"
     ></react-chatbot>
   </div>
@@ -93,11 +88,7 @@ import { Component, AfterViewInit } from "@angular/core";
   template: `
     <div>
       <!-- Your Angular content -->
-      <react-chatbot
-        api-key="your-api-key-here"
-        title="Support Assistant"
-        position="bottom-right"
-      >
+      <react-chatbot api-key="your-api-key-here" position="bottom-right">
       </react-chatbot>
     </div>
   `,
@@ -125,9 +116,7 @@ When you can't install NPM packages (like in ecommerce platforms), use CDN:
 
 <react-chatbot
   api-key="your-api-key-here"
-  title="Help Assistant"
   position="bottom-right"
-  welcome-message="Hello! How can I help you today?"
 ></react-chatbot>
 ```
 
@@ -141,10 +130,8 @@ Add to your theme's `footer.php` or via plugin:
 <script src="https://unpkg.com/react-chatbot-component/dist/react-chatbot-component.umd.js"></script>
 
 <react-chatbot
-  title="<?php echo get_bloginfo('name'); ?> Support"
   api-key="your-api-key-here"
   position="bottom-right"
-  welcome-message="Welcome to <?php echo get_bloginfo('name'); ?>!"
 ></react-chatbot>
 ```
 
@@ -158,10 +145,8 @@ Add to your theme's `theme.liquid` before `</body>`:
 <script src="https://unpkg.com/react-chatbot-component/dist/react-chatbot-component.umd.js"></script>
 
 <react-chatbot
-  title="{{ shop.name }} Support"
   api-key="your-api-key-here"
   position="bottom-right"
-  welcome-message="Welcome to {{ shop.name }}!"
 ></react-chatbot>
 ```
 
@@ -175,7 +160,6 @@ Add to your theme template:
 <script src="https://unpkg.com/react-chatbot-component/dist/react-chatbot-component.umd.js"></script>
 
 <react-chatbot
-  title="<?= $this->escapeHtml($this->getStoreName()) ?> Support"
   api-key="your-api-key-here"
   position="bottom-right"
 ></react-chatbot>
@@ -202,7 +186,6 @@ For static sites where you can't use package managers:
     <!-- Chatbot Component -->
     <react-chatbot
       api-key="your-api-key-here"
-      title="Website Support"
       position="bottom-right"
     ></react-chatbot>
   </body>
@@ -233,14 +216,12 @@ For static sites where you can't use package managers:
 
 ### Available Attributes
 
-| Attribute         | Type        | Default                            | Description                     |
-| ----------------- | ----------- | ---------------------------------- | ------------------------------- |
-| `api-key`         | string      | -                                  | Your API key for authentication |
-| `title`           | string      | "Chat Assistant"                   | Chatbot window title            |
-| `position`        | string      | "bottom-right"                     | Position on screen              |
-| `welcome-message` | string      | "Hello! How can I help you today?" | Initial bot message             |
-| `theme`           | JSON string | -                                  | Custom theme colors             |
-| `placeholder`     | string      | "Type your message..."             | Input placeholder               |
+| Attribute  | Type   | Default        | Description                                                         |
+| ---------- | ------ | -------------- | ------------------------------------------------------------------- |
+| `api-key`  | string | -              | Your API key for authentication (required)                          |
+| `position` | string | "bottom-right" | Position on screen (bottom-right, bottom-left, top-right, top-left) |
+
+> **Note:** All other configuration (title, theme, welcome message, etc.) is managed through your admin portal and loaded automatically via API key validation.
 
 ## 🛡️ API & Authentication
 

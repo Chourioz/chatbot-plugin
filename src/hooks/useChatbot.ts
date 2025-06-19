@@ -39,9 +39,6 @@ interface ChatbotState {
 
 interface UseChatbotOptions {
   apiKey?: string;
-  onMessage?: MessageHandler;
-  maxMessages?: number;
-  welcomeMessage?: string;
 }
 
 interface UseChatbotReturn {
@@ -630,9 +627,6 @@ console.log(`🔗 Validation endpoint: ${config.validationEndpoint}`);
 // Main Custom Hook (Dependency Inversion + Interface Segregation)
 export const useChatbot = ({
   apiKey,
-  onMessage,
-  maxMessages = 100,
-  welcomeMessage,
 }: UseChatbotOptions = {}): UseChatbotReturn => {
   // State Management
   const [state, setState] = useState<ChatbotState>({
@@ -650,7 +644,7 @@ export const useChatbot = ({
   // Refs for stable references
   const apiConnectionRef = useRef<ApiConnection | null>(null);
   const messageIdCounterRef = useRef(0);
-  const welcomeMessageRef = useRef(welcomeMessage);
+  const welcomeMessageRef = useRef<string | undefined>(undefined);
 
   // Validate API key function
   const validateApiKey = useCallback(async () => {
@@ -773,7 +767,6 @@ export const useChatbot = ({
     const effectiveWelcomeMessage =
       apiWelcomeMessage ||
       welcomeMessageRef.current ||
-      welcomeMessage ||
       "Hello! How can I help you today?";
 
     // Always update welcomeMessageRef to the effective message
@@ -832,7 +825,6 @@ export const useChatbot = ({
     state.apiKeyValidation.isValid,
     state.apiKeyValidation.chatbotConfig?.welcomeText,
     state.messages.length,
-    welcomeMessage, // Include initial prop for first load
   ]);
 
   // Message ID generator
@@ -845,15 +837,12 @@ export const useChatbot = ({
   );
 
   // Add message to state
-  const addMessage = useCallback(
-    (message: ChatMessage) => {
-      setState((prev) => ({
-        ...prev,
-        messages: [...prev.messages.slice(-(maxMessages - 1)), message],
-      }));
-    },
-    [maxMessages]
-  );
+  const addMessage = useCallback((message: ChatMessage) => {
+    setState((prev) => ({
+      ...prev,
+      messages: [...prev.messages, message],
+    }));
+  }, []);
 
   // Default message handler using API
   const defaultMessageHandler = useCallback(
@@ -899,9 +888,9 @@ export const useChatbot = ({
       addMessage(userMessage);
 
       // Determine message handler (Dependency Inversion)
-      const messageHandler =
-        onMessage ||
-        (state.apiKeyValidation.isValid ? defaultMessageHandler : null);
+      const messageHandler = state.apiKeyValidation.isValid
+        ? defaultMessageHandler
+        : null;
 
       if (!messageHandler) {
         const errorMessage: ChatMessage = {
@@ -919,7 +908,7 @@ export const useChatbot = ({
 
       try {
         // Process message
-        const response = await messageHandler(text.trim(), apiKey);
+        const response = await messageHandler(text.trim());
 
         const botMessage: ChatMessage = {
           id: generateMessageId("bot"),
@@ -951,7 +940,6 @@ export const useChatbot = ({
     [
       generateMessageId,
       addMessage,
-      onMessage,
       state.apiKeyValidation.isValid,
       defaultMessageHandler,
       apiKey,
@@ -1006,10 +994,9 @@ export const useChatbot = ({
     return (
       state.apiKeyValidation.chatbotConfig?.welcomeText ||
       welcomeMessageRef.current ||
-      welcomeMessage ||
       "Hello! How can I help you today?"
     );
-  }, [state.apiKeyValidation.chatbotConfig?.welcomeText, welcomeMessage]);
+  }, [state.apiKeyValidation.chatbotConfig?.welcomeText]);
 
   return {
     // State
