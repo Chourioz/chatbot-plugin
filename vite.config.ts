@@ -28,15 +28,27 @@ export default defineConfig({
     },
     rollupOptions: {
       external: ["react", "react-dom"],
-      output: {
-        globals: {
-          react: "React",
-          "react-dom": "ReactDOM",
+      output: [
+        // ES module output
+        {
+          format: "es",
+          entryFileNames: "react-chatbot-component.es.js",
         },
-      },
+        // UMD output with proper React globals
+        {
+          format: "umd",
+          entryFileNames: "react-chatbot-component.umd.js",
+          name: "ReactChatbotComponent",
+          globals: {
+            react: "React",
+            "react-dom": "ReactDOM",
+          },
+        },
+      ],
     },
     cssCodeSplit: false,
     minify: "terser",
+    sourcemap: false,
   },
   define: {
     "process.env.NODE_ENV": JSON.stringify("production"),
