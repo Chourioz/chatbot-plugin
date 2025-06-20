@@ -1,9 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import type {
-  ChatMessage,
-  MessageHandler,
-  ServerChatbotConfig,
-} from "../types";
+import type { ChatMessage, ServerChatbotConfig } from "../types";
 
 // Types for the hook
 interface ApiKeyValidation {

@@ -48,7 +48,7 @@ Object.defineProperty(window, "matchMedia", {
 Object.defineProperty(window, "CSS", {
   writable: true,
   value: {
-    supports: (property: string, value: string) => true,
+    supports: (_property: string, _value: string) => true,
   },
 });
 
@@ -62,8 +62,8 @@ Object.defineProperty(window, "CSS", {
 // Mock IntersectionObserver for visibility testing
 (global as any).IntersectionObserver = class IntersectionObserver {
   constructor(
-    callback: IntersectionObserverCallback,
-    options?: IntersectionObserverInit
+    _callback: IntersectionObserverCallback,
+    _options?: IntersectionObserverInit
   ) {}
   observe() {}
   unobserve() {}

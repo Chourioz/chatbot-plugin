@@ -7,7 +7,7 @@ import {
   afterEach,
   beforeAll,
 } from "vitest";
-import React from "react"; // React is needed for React.createElement call
+// React import removed as it's not needed with React 17+ JSX transform
 
 const mockRender = vi.fn();
 const mockUnmount = vi.fn();

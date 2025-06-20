@@ -59,8 +59,9 @@ export const ReactChatbot: React.FC<ChatbotProps> = ({
   // Get configuration from API key validation or use defaults
   const config = apiKeyValidation.chatbotConfig;
   const title = config?.title || "Chat Assistant";
-  const welcomeMessage =
-    config?.welcomeText || "Hello! How can I help you today?";
+  // welcomeMessage is defined but not used in current implementation
+  // const welcomeMessage =
+  //   config?.welcomeText || "Hello! How can I help you today?";
   const placeholder = config?.placeholder || "Type your message...";
   const theme = config?.theme
     ? { ...defaultTheme, ...config.theme }
