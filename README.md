@@ -1,46 +1,110 @@
-# Custom Agent Sales Chatbot
+# VentaBot24 - Asistente de Ventas Inteligente
 
-> A modern, animated chatbot web component with GSAP-powered animations and SaaS integration. Works with any frontend framework via CDN.
+> El chatbot de ventas 24/7 que revoluciona tu e-commerce. Reduce hasta 80% los mensajes de WhatsApp y aumenta tus ventas mientras duermes.
 
-[![npm version](https://badge.fury.io/js/@chouriodev/custom-agent-sales-chatbot.svg)](https://www.npmjs.com/package/@chouriodev/custom-agent-sales-chatbot) [![Downloads](https://img.shields.io/npm/dm/@chouriodev/custom-agent-sales-chatbot.svg)](https://www.npmjs.com/package/@chouriodev/custom-agent-sales-chatbot) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![npm version](https://badge.fury.io/js/%40chouriodev%2Fcustom-agent-sales-chatbot.svg)](https://badge.fury.io/js/%40chouriodev%2Fcustom-agent-sales-chatbot)
+[![npm downloads](https://img.shields.io/npm/dm/@chouriodev/custom-agent-sales-chatbot)](https://www.npmjs.com/package/@chouriodev/custom-agent-sales-chatbot) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[🚀 Live Demo](https://your-demo-url.com) • [📖 Full Documentation](https://docs.your-domain.com) • [💬 Community](https://discord.gg/your-server)
+[🚀 Demo en Vivo](https://ventabot24.com/demo) • [📖 Documentación](https://docs.ventabot24.com) • [💬 Comunidad](https://discord.gg/ventabot24)
 
-## ✨ Features
+## 🇻🇪 Diseñado para PyMEs Venezolanas
 
-- **🎨 GSAP Animations** - Smooth, professional animations for all interactions
-- **🔑 SaaS Ready** - Built-in API key management and client authentication
-- **⚡ Universal Web Component** - Works with React, Vue, Angular, vanilla JS, or any HTML page
-- **📱 Responsive** - Mobile-first design that works on all devices
-- **🛍️ Ecommerce Ready** - Easy integration with WooCommerce, Shopify, Magento via CDN
-- **🌙 Dark Mode** - Automatic theme detection with customizable themes
+**¿Cansado de responder las mismas preguntas sobre productos a todas horas?**
 
-## 🚀 Quick Start
+VentaBot24 es tu asistente de ventas inteligente que trabaja 24/7 en tu e-commerce, respondiendo preguntas de clientes, recomendando productos y cerrando ventas mientras tú te enfocas en hacer crecer tu negocio.
 
-### 1. Get Your API Key
+### 🎯 Perfecto para:
 
-Before using the component, you need to register for an API key:
+- Tiendas en Instagram/Facebook que reciben muchos DMs
+- E-commerce que necesitan atención fuera del horario laboral
+- Empresarios que quieren automatizar consultas repetitivas
+- Negocios que buscan aumentar conversiones sin contratar personal
 
-**[🔑 Register for API Key →](https://your-admin-portal.com/register)**
+## ✨ ¿Por qué VentaBot24?
 
-1. Sign up for a free account
-2. Create a new project
-3. Copy your API key from the dashboard
-4. Use it in your integration below
+### 📱 **Reduce Mensajes de WhatsApp hasta 80%**
 
-### 2. Installation
+- Responde automáticamente consultas sobre productos, precios y disponibilidad
+- Filtra clientes calificados antes que lleguen a tu WhatsApp personal
+- Maneja múltiples consultas simultáneamente
+
+### 🕐 **Ventas 24/7 Sin Interrupciones**
+
+- Tu asistente nunca duerme, come o toma vacaciones
+- Atiende clientes en madrugada, fines de semana y feriados
+- Aumenta tus ventas capturando clientes fuera del horario laboral
+
+### 🤖 **Inteligencia Artificial Entrenada para Ventas**
+
+- Conoce tu catálogo de productos al detalle
+- Hace recomendaciones personalizadas basadas en preferencias
+- Acompaña al cliente desde la consulta hasta la compra
+
+### 🛍️ **Integración Universal**
+
+- Funciona con cualquier plataforma: WooCommerce, Shopify, Tienda Nube
+- Compatible con sitios hechos en WordPress, HTML, React, Vue
+- Instalación en 5 minutos con solo pegar un código
+
+### 📊 **Analytics que Importan**
+
+- Seguimiento de conversiones y ventas generadas
+- Reportes de preguntas más frecuentes
+- Métricas de satisfacción del cliente
+
+## 🚀 Instalación Súper Fácil
+
+### 1. Obtén tu Clave API
+
+**[🔑 Registrarse GRATIS →](https://ventabot24.com/registro)**
+
+1. Crea tu cuenta gratuita
+2. Configura tu catálogo de productos
+3. Personaliza respuestas de tu bot
+4. Copia tu clave API
+
+### 2. Versión Gratuita Incluye:
+
+- ✅ **Conversaciones ilimitadas**
+- ✅ **Catálogo de productos completo**
+- ✅ **Integración fácil**
+- ✅ **Soporte por email**
+
+### 3. Agrega a tu Sitio Web
+
+#### Para WordPress/WooCommerce
+
+```html
+<!-- Pega antes de </body> en tu tema -->
+<script src="https://unpkg.com/react@19/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@chouriodev/custom-agent-sales-chatbot/dist/react-chatbot-component.umd.js"></script>
+
+<react-chatbot
+  api-key="tu-clave-api-aqui"
+  position="bottom-right"
+></react-chatbot>
+```
+
+#### Para Shopify
+
+```liquid
+<!-- En theme.liquid antes de </body> -->
+<script src="https://unpkg.com/react@19/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@chouriodev/custom-agent-sales-chatbot/dist/react-chatbot-component.umd.js"></script>
+
+<react-chatbot
+  api-key="tu-clave-api-aqui"
+  position="bottom-right"
+></react-chatbot>
+```
+
+#### Para React/Next.js
 
 ```bash
 npm install @chouriodev/custom-agent-sales-chatbot
-# or
-pnpm add @chouriodev/custom-agent-sales-chatbot
-# or
-yarn add @chouriodev/custom-agent-sales-chatbot
 ```
-
-### 3. Basic Usage
-
-#### React/Next.js
 
 ```jsx
 import "@chouriodev/custom-agent-sales-chatbot/dist/style.css";
@@ -48,224 +112,101 @@ import "@chouriodev/custom-agent-sales-chatbot/dist/style.css";
 function App() {
   return (
     <div>
-      {/* Your React content */}
-      <react-chatbot api-key="your-api-key-here" position="bottom-right" />
+      {/* Tu contenido */}
+      <react-chatbot api-key="tu-clave-api-aqui" position="bottom-right" />
     </div>
   );
 }
 ```
 
-#### Vue.js
-
-```vue
-<template>
-  <div>
-    <!-- Your Vue app content -->
-    <react-chatbot
-      api-key="your-api-key-here"
-      position="bottom-right"
-    ></react-chatbot>
-  </div>
-</template>
-
-<script>
-import "@chouriodev/custom-agent-sales-chatbot/dist/style.css";
-
-export default {
-  name: "App",
-};
-</script>
-```
-
-#### Angular
-
-```typescript
-// In your component
-import { Component, AfterViewInit } from "@angular/core";
-
-@Component({
-  selector: "app-home",
-  template: `
-    <div>
-      <!-- Your Angular content -->
-      <react-chatbot api-key="your-api-key-here" position="bottom-right">
-      </react-chatbot>
-    </div>
-  `,
-})
-export class HomeComponent implements AfterViewInit {
-  ngAfterViewInit() {
-    // Component is ready
-  }
-}
-```
-
-```css
-/* In your global styles.css or angular.json */
-@import "@chouriodev/custom-agent-sales-chatbot/dist/style.css";
-```
-
-## 🛍️ CDN Integration (For Ecommerce Platforms)
-
-When you can't install NPM packages (like in ecommerce platforms), use CDN:
-
-```html
-<script src="https://unpkg.com/react@19/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@chouriodev/custom-agent-sales-chatbot/dist/react-chatbot-component.umd.js"></script>
-
-<react-chatbot
-  api-key="your-api-key-here"
-  position="bottom-right"
-></react-chatbot>
-```
-
-### WooCommerce (WordPress)
-
-Add to your theme's `footer.php` or via plugin:
-
-```php
-<script src="https://unpkg.com/react@19/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@chouriodev/custom-agent-sales-chatbot/dist/react-chatbot-component.umd.js"></script>
-
-<react-chatbot
-  api-key="your-api-key-here"
-  position="bottom-right"
-></react-chatbot>
-```
-
-### Shopify
-
-Add to your theme's `theme.liquid` before `</body>`:
-
-```liquid
-<script src="https://unpkg.com/react@19/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@chouriodev/custom-agent-sales-chatbot/dist/react-chatbot-component.umd.js"></script>
-
-<react-chatbot
-  api-key="your-api-key-here"
-  position="bottom-right"
-></react-chatbot>
-```
-
-### Magento
-
-Add to your theme template:
-
-```php
-<script src="https://unpkg.com/react@19/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@chouriodev/custom-agent-sales-chatbot/dist/react-chatbot-component.umd.js"></script>
-
-<react-chatbot
-  api-key="your-api-key-here"
-  position="bottom-right"
-></react-chatbot>
-```
-
-### Vanilla JavaScript (Static Sites)
-
-For static sites where you can't use package managers:
+#### Para Cualquier Sitio Web
 
 ```html
 <!DOCTYPE html>
 <html>
   <head>
-    <title>My Website</title>
+    <title>Mi Tienda Online</title>
   </head>
   <body>
-    <h1>Welcome to my site</h1>
+    <h1>Bienvenidos a mi tienda</h1>
 
-    <!-- CDN Scripts -->
+    <!-- Scripts de VentaBot24 -->
     <script src="https://unpkg.com/react@19/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@chouriodev/custom-agent-sales-chatbot/dist/react-chatbot-component.umd.js"></script>
 
-    <!-- Chatbot Component -->
+    <!-- Tu asistente de ventas -->
     <react-chatbot
-      api-key="your-api-key-here"
+      api-key="tu-clave-api-aqui"
       position="bottom-right"
     ></react-chatbot>
   </body>
 </html>
 ```
 
-## 🎨 Customization
+## 🎨 Personalización Total
 
-### Themes
+### Configuración desde Panel de Administración
 
-```html
-<react-chatbot
-  api-key="your-api-key"
-  theme='{
-    "primary": "#3b82f6",
-    "secondary": "#1e40af", 
-    "accent": "#60a5fa"
-  }'
-></react-chatbot>
-```
+Toda la personalización visual y funcional se maneja desde tu **panel de control**:
 
-### Positioning
+- 🎨 **Colores de tu marca** (primario, secundario, acentos)
+- 💬 **Mensajes personalizados** (bienvenida, despedida, etc.)
+- 🛍️ **Catálogo de productos** y descripciones
+- 🤖 **Personalidad del bot** y tono de respuestas
+- 📊 **Analytics y reportes** personalizados
+
+### Posicionamiento
 
 ```html
 <react-chatbot position="bottom-left"></react-chatbot>
-<!-- Options: bottom-right | bottom-left | top-left | top-right -->
+<!-- Opciones: bottom-right | bottom-left | top-left | top-right -->
 ```
 
-### Available Attributes
+### Atributos Disponibles
 
-| Attribute  | Type   | Default        | Description                                                         |
-| ---------- | ------ | -------------- | ------------------------------------------------------------------- |
-| `api-key`  | string | -              | Your API key for authentication (required)                          |
-| `position` | string | "bottom-right" | Position on screen (bottom-right, bottom-left, top-right, top-left) |
+| Atributo   | Tipo   | Por Defecto    | Descripción                                 |
+| ---------- | ------ | -------------- | ------------------------------------------- |
+| `api-key`  | string | -              | Tu clave API para autenticación (requerida) |
+| `position` | string | "bottom-right" | Posición en pantalla                        |
 
-> **Note:** All other configuration (title, theme, welcome message, etc.) is managed through your admin portal and loaded automatically via API key validation.
+> **Nota:** Toda la personalización (colores, mensajes, productos, configuración) se maneja desde tu panel de administración y se sincroniza automáticamente con el componente usando tu API key.
 
-## 🛡️ API & Authentication
+## 🔧 Soporte y Comunidad
 
-The component uses your API key to:
+- **[💬 Comunidad Discord](https://discord.gg/ventabot24)** - Conecta con otros emprendedores
+- **[📧 Soporte Email](mailto:soporte@ventabot24.com)** - Asistencia técnica
+- **[🐛 Reportar Errores](https://github.com/Chourioz/ventabot24/issues)** - Mejoramos constantemente
+- **[💡 Sugerencias](https://github.com/Chourioz/ventabot24/discussions)** - Tu feedback nos importa
 
-- Authenticate your account
-- Process chat messages through your configured AI model
-- Track usage and analytics
-- Enable premium features
+## 📚 Recursos Útiles
 
-**Free tier includes:**
+- **[📖 Documentación Completa](https://docs.ventabot24.com)** - Guías paso a paso
+- **[🎨 Guía de Personalización](https://docs.ventabot24.com/personalizacion)** - Adapta el bot a tu marca
+- **[🛍️ Integración E-commerce](https://docs.ventabot24.com/ecommerce)** - Guías por plataforma
+- **[📱 Optimización Móvil](https://docs.ventabot24.com/movil)** - Mejores prácticas
+- **[📊 Guía de Analytics](https://docs.ventabot24.com/analytics)** - Entiende tus métricas
 
-- Up to 1,000 messages/month
-- Basic theming
-- Standard support
+## ⚡ Rendimiento Optimizado
 
-**[🚀 Upgrade Plans →](https://your-domain.com/pricing)**
+- **Tamaño**: ~45KB comprimido
+- **Carga**: <100ms en 3G
+- **Impacto**: Mínimo en tu sitio
+- **CDN**: Distribución global para máxima velocidad
 
-## 📚 Documentation
+## 🔒 Seguridad y Privacidad
 
-- **[📖 Full Documentation](https://docs.your-domain.com)** - Complete guides and API reference
-- **[🎨 Theming Guide](https://docs.your-domain.com/theming)** - Customize appearance
-- **[🔧 Configuration](https://docs.your-domain.com/config)** - All available options
-- **[🛍️ Ecommerce Integration](https://docs.your-domain.com/ecommerce)** - Platform-specific guides
-- **[📱 Mobile Setup](https://docs.your-domain.com/mobile)** - Responsive design tips
+- Datos encriptados end-to-end
+- Cumple con GDPR y leyes venezolanas
+- Sin almacenamiento de información sensible
+- Auditado por terceros
 
-## 🤝 Support & Community
+## 📄 Licencia
 
-- **[💬 Discord Community](https://discord.gg/your-server)** - Get help and share feedback
-- **[📧 Email Support](mailto:support@your-domain.com)** - Technical assistance
-- **[🐛 Bug Reports](https://github.com/Chourioz/chatbot-plugin/issues)** - Report issues
-- **[💡 Feature Requests](https://github.com/Chourioz/chatbot-plugin/discussions)** - Suggest improvements
-
-## ⚡ Performance
-
-- **Bundle size**: ~45KB gzipped
-- **Load time**: <100ms on 3G
-- **Framework overhead**: Minimal
-- **CDN optimized**: Global edge distribution
-
-## 📄 License
-
-MIT © [Your Company Name](https://your-domain.com)
+MIT © [VentaBot24](https://ventabot24.com)
 
 ---
 
-**[🔑 Get Your API Key](https://your-admin-portal.com/register)** • **[📖 Documentation](https://docs.your-domain.com)** • **[💬 Community](https://discord.gg/your-server)**
+**[🔑 Comenzar Gratis](https://ventabot24.com/registro)** • **[📖 Documentación](https://docs.ventabot24.com)** • **[💬 Comunidad](https://discord.gg/ventabot24)**
+
+_Revoluciona tu e-commerce hoy. Tu primer asistente de ventas inteligente te está esperando._

@@ -12,8 +12,11 @@ export default defineConfig({
     tailwindcss(),
     dts({
       insertTypesEntry: true,
-      copyDtsFiles: true,
+      copyDtsFiles: false,
+      outDir: "dist",
       tsconfigPath: "./tsconfig.app.json",
+      exclude: ["src/**/*.test.ts", "src/**/*.test.tsx", "vitest.setup.ts"],
+      rollupTypes: true,
     }),
   ],
   build: {
