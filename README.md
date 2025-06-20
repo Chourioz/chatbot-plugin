@@ -1,8 +1,8 @@
-# React Chatbot Component
+# Custom Agent Sales Chatbot
 
 > A modern, animated chatbot web component with GSAP-powered animations and SaaS integration. Works with any frontend framework via CDN.
 
-[![npm version](https://badge.fury.io/js/react-chatbot-component.svg)](https://www.npmjs.com/package/react-chatbot-component) [![Downloads](https://img.shields.io/npm/dm/react-chatbot-component.svg)](https://www.npmjs.com/package/react-chatbot-component) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![npm version](https://badge.fury.io/js/@chouriodev/custom-agent-sales-chatbot.svg)](https://www.npmjs.com/package/@chouriodev/custom-agent-sales-chatbot) [![Downloads](https://img.shields.io/npm/dm/@chouriodev/custom-agent-sales-chatbot.svg)](https://www.npmjs.com/package/@chouriodev/custom-agent-sales-chatbot) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 [🚀 Live Demo](https://your-demo-url.com) • [📖 Full Documentation](https://docs.your-domain.com) • [💬 Community](https://discord.gg/your-server)
 
@@ -31,11 +31,11 @@ Before using the component, you need to register for an API key:
 ### 2. Installation
 
 ```bash
-npm install react-chatbot-component
+npm install @chouriodev/custom-agent-sales-chatbot
 # or
-pnpm add react-chatbot-component
+pnpm add @chouriodev/custom-agent-sales-chatbot
 # or
-yarn add react-chatbot-component
+yarn add @chouriodev/custom-agent-sales-chatbot
 ```
 
 ### 3. Basic Usage
@@ -43,7 +43,7 @@ yarn add react-chatbot-component
 #### React/Next.js
 
 ```jsx
-import "react-chatbot-component/dist/style.css";
+import "@chouriodev/custom-agent-sales-chatbot/dist/style.css";
 
 function App() {
   return (
@@ -69,7 +69,7 @@ function App() {
 </template>
 
 <script>
-import "react-chatbot-component/dist/style.css";
+import "@chouriodev/custom-agent-sales-chatbot/dist/style.css";
 
 export default {
   name: "App",
@@ -102,7 +102,7 @@ export class HomeComponent implements AfterViewInit {
 
 ```css
 /* In your global styles.css or angular.json */
-@import "react-chatbot-component/dist/style.css";
+@import "@chouriodev/custom-agent-sales-chatbot/dist/style.css";
 ```
 
 ## 🛍️ CDN Integration (For Ecommerce Platforms)
@@ -112,7 +112,7 @@ When you can't install NPM packages (like in ecommerce platforms), use CDN:
 ```html
 <script src="https://unpkg.com/react@19/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/react-chatbot-component/dist/react-chatbot-component.umd.js"></script>
+<script src="https://unpkg.com/@chouriodev/custom-agent-sales-chatbot/dist/react-chatbot-component.umd.js"></script>
 
 <react-chatbot
   api-key="your-api-key-here"
@@ -127,7 +127,7 @@ Add to your theme's `footer.php` or via plugin:
 ```php
 <script src="https://unpkg.com/react@19/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/react-chatbot-component/dist/react-chatbot-component.umd.js"></script>
+<script src="https://unpkg.com/@chouriodev/custom-agent-sales-chatbot/dist/react-chatbot-component.umd.js"></script>
 
 <react-chatbot
   api-key="your-api-key-here"
@@ -142,7 +142,7 @@ Add to your theme's `theme.liquid` before `</body>`:
 ```liquid
 <script src="https://unpkg.com/react@19/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/react-chatbot-component/dist/react-chatbot-component.umd.js"></script>
+<script src="https://unpkg.com/@chouriodev/custom-agent-sales-chatbot/dist/react-chatbot-component.umd.js"></script>
 
 <react-chatbot
   api-key="your-api-key-here"
@@ -157,7 +157,7 @@ Add to your theme template:
 ```php
 <script src="https://unpkg.com/react@19/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/react-chatbot-component/dist/react-chatbot-component.umd.js"></script>
+<script src="https://unpkg.com/@chouriodev/custom-agent-sales-chatbot/dist/react-chatbot-component.umd.js"></script>
 
 <react-chatbot
   api-key="your-api-key-here"
@@ -181,7 +181,7 @@ For static sites where you can't use package managers:
     <!-- CDN Scripts -->
     <script src="https://unpkg.com/react@19/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/react-chatbot-component/dist/react-chatbot-component.umd.js"></script>
+    <script src="https://unpkg.com/@chouriodev/custom-agent-sales-chatbot/dist/react-chatbot-component.umd.js"></script>
 
     <!-- Chatbot Component -->
     <react-chatbot
@@ -252,8 +252,8 @@ The component uses your API key to:
 
 - **[💬 Discord Community](https://discord.gg/your-server)** - Get help and share feedback
 - **[📧 Email Support](mailto:support@your-domain.com)** - Technical assistance
-- **[🐛 Bug Reports](https://github.com/your-username/react-chatbot-component/issues)** - Report issues
-- **[💡 Feature Requests](https://github.com/your-username/react-chatbot-component/discussions)** - Suggest improvements
+- **[🐛 Bug Reports](https://github.com/Chourioz/chatbot-plugin/issues)** - Report issues
+- **[💡 Feature Requests](https://github.com/Chourioz/chatbot-plugin/discussions)** - Suggest improvements
 
 ## ⚡ Performance
 

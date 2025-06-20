@@ -6,7 +6,9 @@
   "module": "./dist/react-chatbot-component.es.js",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist/*.js",
+    "dist/*.d.ts",
+    "README.md"
   ],
   "exports": {
     ".": {
@@ -78,7 +80,7 @@
   "description": "A customizable React chatbot component with floating UI and Tailwind CSS styling",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Chourioz/chatbot-plugin.git"
+    "url": "git+https://github.com/Chourioz/chatbot-plugin.git"
   },
   "license": "MIT"
 }
