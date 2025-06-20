@@ -47,8 +47,8 @@ export default defineConfig({
       ],
     },
     cssCodeSplit: false,
-    minify: "terser",
-    sourcemap: false,
+    minify: false,
+    sourcemap: true,
   },
   define: {
     "process.env.NODE_ENV": JSON.stringify("production"),

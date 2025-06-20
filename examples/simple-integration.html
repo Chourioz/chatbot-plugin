@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Tienda Online - Ejemplo Chatbot</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .product {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .price {
+            font-size: 24px;
+            color: #007cba;
+            font-weight: bold;
+        }
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #005a8b;
+        }
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .controls button {
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+        }
+        .debug-info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #333;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛍️ Mi Tienda Online</h1>
+        <p>Bienvenido a nuestra tienda. Nuestro asistente de ventas está aquí para ayudarte.</p>
+
+        <div class="product">
+            <h3>Producto Destacado</h3>
+            <p>Descripción del producto más vendido de la semana.</p>
+            <div class="price">$99.99</div>
+            <button onclick="addToCart()">Agregar al Carrito</button>
+        </div>
+
+        <div class="product">
+            <h3>Oferta Especial</h3>
+            <p>Producto con descuento limitado por tiempo.</p>
+            <div class="price">$79.99 <small style="text-decoration: line-through; color: #666;">$99.99</small></div>
+            <button onclick="addToCart()">Aprovechar Oferta</button>
+        </div>
+    </div>
+
+    <!-- Controles de prueba -->
+    <div class="controls">
+        <h4>Controles de Prueba</h4>
+        <button onclick="loadChatbot()">Cargar Chatbot</button>
+        <button onclick="removeChatbot()">Remover Chatbot</button>
+        <button onclick="updateTheme()">Cambiar Tema</button>
+        <button onclick="testChatbot()">Test Básico</button>
+    </div>
+
+    <!-- Debug info -->
+    <div class="debug-info" id="debug-info">
+        <div>Cargando...</div>
+    </div>
+
+    <!-- IMPORTANTE: Cargar React ANTES del componente chatbot -->
+    <script crossorigin src="https://unpkg.com/react@19/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js"></script>
+    
+    <!-- Verificar que React esté disponible antes de cargar el chatbot -->
+    <script>
+        function updateDebugInfo(message) {
+            const debugEl = document.getElementById('debug-info');
+            if (debugEl) {
+                debugEl.innerHTML = `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
+            }
+        }
+
+        // Verificar que React esté cargado
+        if (typeof React === 'undefined') {
+            console.error('React no está disponible. Asegúrate de que los scripts de React se carguen correctamente.');
+            updateDebugInfo('❌ React no disponible');
+        } else {
+            console.log('React cargado correctamente:', React.version);
+            updateDebugInfo(`✅ React ${React.version} cargado`);
+        }
+
+        if (typeof ReactDOM === 'undefined') {
+            console.error('ReactDOM no está disponible. Asegúrate de que los scripts de ReactDOM se carguen correctamente.');
+            updateDebugInfo('❌ ReactDOM no disponible');
+        } else {
+            console.log('ReactDOM cargado correctamente');
+            updateDebugInfo('✅ ReactDOM cargado');
+        }
+    </script>
+
+    <!-- Cargar el componente chatbot DESPUÉS de React -->
+    <script src="../dist/react-chatbot-component.umd.js"></script>
+
+    <!-- Verificar que el componente esté disponible -->
+    <script>
+        if (typeof ReactChatbotComponent === 'undefined') {
+            console.error('ReactChatbotComponent no está disponible.');
+            updateDebugInfo('❌ ReactChatbotComponent no disponible');
+        } else {
+            console.log('ReactChatbotComponent cargado correctamente:', ReactChatbotComponent);
+            updateDebugInfo('✅ ReactChatbotComponent cargado');
+        }
+    </script>
+
+    <!-- JavaScript de la aplicación -->
+    <script>
+        let currentChatbot = null;
+
+        // Función para cargar el chatbot
+        function loadChatbot() {
+            // Remover chatbot existente si hay uno
+            removeChatbot();
+
+            try {
+                updateDebugInfo('🔄 Cargando chatbot...');
+                
+                // Crear elemento del chatbot
+                const chatbot = document.createElement('react-chatbot');
+                
+                // Configurar atributos
+                chatbot.setAttribute('api-key', 'demo-key-tienda-online');
+                chatbot.setAttribute('title', 'Asistente de Ventas');
+                chatbot.setAttribute('position', 'bottom-right');
+                chatbot.setAttribute('welcome-message', '¡Hola! Soy tu asistente de ventas. ¿En qué puedo ayudarte hoy?');
+                chatbot.setAttribute('placeholder', 'Escribe tu pregunta aquí...');
+                
+                // Agregar al DOM
+                document.body.appendChild(chatbot);
+                currentChatbot = chatbot;
+                
+                console.log('Chatbot cargado exitosamente');
+                updateDebugInfo('✅ Chatbot cargado exitosamente');
+            } catch (error) {
+                console.error('Error al cargar el chatbot:', error);
+                updateDebugInfo(`❌ Error: ${error.message}`);
+                alert('Error al cargar el chatbot. Revisa la consola para más detalles.');
+            }
+        }
+
+        // Función para remover el chatbot
+        function removeChatbot() {
+            if (currentChatbot) {
+                currentChatbot.remove();
+                currentChatbot = null;
+                console.log('Chatbot removido');
+                updateDebugInfo('🗑️ Chatbot removido');
+            }
+        }
+
+        // Función para actualizar el tema
+        function updateTheme() {
+            if (currentChatbot) {
+                const themes = [
+                    {
+                        primary: '#007cba',
+                        secondary: '#005a8b',
+                        accent: '#4a90e2'
+                    },
+                    {
+                        primary: '#ff6b35',
+                        secondary: '#e55a2b',
+                        accent: '#ffa500'
+                    },
+                    {
+                        primary: '#28a745',
+                        secondary: '#1e7e34',
+                        accent: '#20c997'
+                    }
+                ];
+                
+                const randomTheme = themes[Math.floor(Math.random() * themes.length)];
+                currentChatbot.setAttribute('theme', JSON.stringify(randomTheme));
+                console.log('Tema actualizado:', randomTheme);
+                updateDebugInfo(`🎨 Tema actualizado: ${randomTheme.primary}`);
+            } else {
+                alert('Primero carga el chatbot');
+                updateDebugInfo('⚠️ No hay chatbot para actualizar tema');
+            }
+        }
+
+        // Función de test básico
+        function testChatbot() {
+            try {
+                updateDebugInfo('🧪 Ejecutando test básico...');
+                
+                // Test 1: Verificar React
+                if (typeof React === 'undefined') {
+                    throw new Error('React no está disponible');
+                }
+                
+                // Test 2: Verificar ReactDOM
+                if (typeof ReactDOM === 'undefined') {
+                    throw new Error('ReactDOM no está disponible');
+                }
+                
+                // Test 3: Verificar componente
+                if (typeof ReactChatbotComponent === 'undefined') {
+                    throw new Error('ReactChatbotComponent no está disponible');
+                }
+                
+                // Test 4: Crear elemento temporal
+                const testElement = document.createElement('react-chatbot');
+                testElement.setAttribute('api-key', 'test-key');
+                
+                console.log('✅ Todos los tests básicos pasaron');
+                updateDebugInfo('✅ Test básico exitoso');
+                
+            } catch (error) {
+                console.error('❌ Test básico falló:', error);
+                updateDebugInfo(`❌ Test falló: ${error.message}`);
+            }
+        }
+
+        // Función simulada para agregar al carrito
+        function addToCart() {
+            alert('Producto agregado al carrito. ¡Pregúntale al chatbot sobre descuentos!');
+            updateDebugInfo('🛒 Producto agregado al carrito');
+        }
+
+        // Cargar el chatbot automáticamente cuando la página esté lista
+        window.addEventListener('load', function() {
+            console.log('Página cargada, iniciando chatbot...');
+            updateDebugInfo('📄 Página cargada');
+            
+            // Delay para asegurar que todo esté cargado
+            setTimeout(() => {
+                loadChatbot();
+            }, 500);
+        });
+
+        // Manejo de errores globales
+        window.addEventListener('error', function(e) {
+            console.error('Error global capturado:', e.error);
+            updateDebugInfo(`🚨 Error global: ${e.error?.message || 'Error desconocido'}`);
+        });
+
+        // Debug inicial
+        updateDebugInfo('🚀 Inicializando...');
+    </script>
+</body>
+</html> 
