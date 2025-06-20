@@ -1,6 +1,6 @@
 {
   "name": "@chouriodev/custom-agent-sales-chatbot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "main": "./dist/react-chatbot-component.umd.js",
   "module": "./dist/react-chatbot-component.es.js",
