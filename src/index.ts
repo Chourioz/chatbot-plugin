@@ -40,6 +40,7 @@ class ReactChatbotElement extends HTMLElement {
       "max-messages",
       "show-typing-indicator",
       "enable-sound",
+      "class",
     ];
   }
 
@@ -77,6 +78,15 @@ class ReactChatbotElement extends HTMLElement {
     this.render();
   }
 
+  private parseTheme(themeString: string): any {
+    try {
+      return JSON.parse(themeString);
+    } catch (error) {
+      console.warn("Invalid theme JSON:", themeString);
+      return undefined;
+    }
+  }
+
   private updateConfig() {
     // Parse boolean attributes properly
     const getBooleanAttribute = (
@@ -105,41 +115,11 @@ class ReactChatbotElement extends HTMLElement {
       maxMessages: getNumberAttribute("max-messages", 100),
       showTypingIndicator: getBooleanAttribute("show-typing-indicator", true),
       enableSound: getBooleanAttribute("enable-sound", false),
+      className: this.getAttribute("class") || undefined,
       theme: this.getAttribute("theme")
-        ? JSON.parse(this.getAttribute("theme")!)
+        ? this.parseTheme(this.getAttribute("theme")!)
         : undefined,
-      onMessage: this.onMessage?.bind(this),
     };
-  }
-
-  private async onMessage(message: string, apiKey?: string): Promise<string> {
-    // Dispatch custom event for message handling
-    const event = new CustomEvent("chatbot-message", {
-      detail: { message, apiKey },
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
-
-    // Check if there's an external handler attached
-    const handler = (this as any).messageHandler;
-    if (handler && typeof handler === "function") {
-      try {
-        return await handler(message, apiKey);
-      } catch (error) {
-        console.error("Error in external message handler:", error);
-      }
-    }
-
-    // Return a default response if no handler is attached
-    return "I received your message: " + message;
-  }
-
-  // Public method to set message handler programmatically
-  setMessageHandler(
-    handler: (message: string, apiKey?: string) => Promise<string>
-  ) {
-    (this as any).messageHandler = handler;
   }
 
   // Public method to update configuration
@@ -206,7 +186,15 @@ class ReactChatbotElement extends HTMLElement {
       this.root = createRoot(container);
     }
 
-    this.root.render(React.createElement(ReactChatbot, this.config));
+    // Only pass the props that the React component actually accepts
+    // The apiKey is required by ReactChatbot, so provide a default if not set
+    const reactProps = {
+      apiKey: this.config.apiKey || "",
+      position: this.config.position || "bottom-right",
+      className: this.config.className,
+    };
+
+    this.root.render(React.createElement(ReactChatbot, reactProps));
   }
 }
 

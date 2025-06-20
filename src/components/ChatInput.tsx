@@ -59,6 +59,7 @@ const ChatInput = memo<ChatInputProps>(({
           disabled={disabled}
           className="chat-input"
           autoComplete="off"
+          aria-label="Type your message"
         />
         <button 
           type="submit" 

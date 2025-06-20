@@ -35,6 +35,9 @@ export interface ChatbotConfig {
   apiKey?: string;
   onMessage?: (message: string, apiKey?: string) => Promise<string>;
   enableSound?: boolean;
+  className?: string;
+  maxMessages?: number;
+  showTypingIndicator?: boolean;
 }
 
 export interface ChatbotProps {
